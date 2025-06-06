@@ -1,72 +1,62 @@
 # 🧼 Chorecade
 
-**Dividir tarefas domésticas nunca foi tão divertido.**  
-Chorecade é um aplicativo gamificado que transforma a rotina da casa em um jogo justo, leve e colaborativo.
+**Turning household chores into a fun and fair game.**  
+Chorecade is a gamified app that transforms daily home responsibilities into a collaborative and rewarding experience.
 
-## 🎯 Propósito
+## 🎯 Purpose
 
-Chorecade nasceu para resolver um problema real: o estresse e os conflitos causados pela má divisão das tarefas domésticas. Usando elementos de **gamificação**, o app ajuda casais, colegas de apartamento e famílias a manterem a organização da casa de forma **justa, clara e divertida**.
+Chorecade was created to solve a real problem: the stress and conflicts caused by an unbalanced division of household tasks. By using elements of **gamification**, the app helps roommates, couples, and families organize chores in a **fair, clear, and playful** way.
 
-## 🚀 Funcionalidades previstas
+## 🚀 Key Features (Planned)
 
-- ✅ Cadastro de perfis e grupos (ex: casal, república, família)
-- ✅ Criação e atribuição de tarefas domésticas
-- ✅ Sistema de pontos, níveis e recompensas por tarefas concluídas
-- ✅ Feedback visual e alertas de desequilíbrio
-- ✅ Estatísticas e histórico de desempenho
-- ✅ Notificações e lembretes amigáveis
+- ✅ Create user profiles and groups (e.g., couple, shared house, family)
+- ✅ Assign and track household chores
+- ✅ Earn points, level up, and unlock rewards
+- ✅ Visual feedback and balance alerts
+- ✅ Performance stats and task history
+- ✅ Friendly reminders and notifications
 
-> Outras ideias estão sendo validadas com os usuários ao longo do desenvolvimento.
+> Additional features are being explored and validated with users.
 
-## 🧠 Metodologia
+## 🧠 Methodology
 
-Este projeto segue os princípios do **CBL (Challenge Based Learning)**, com foco em resolver um problema real da sociedade através da tecnologia. Todas as etapas do desenvolvimento estão sendo guiadas por validações com o público-alvo.
+This project follows the principles of **Challenge Based Learning (CBL)**, aiming to solve a meaningful real-world problem through technology. Every development step is driven by research, testing, and user feedback.
 
-## 👤 Público-alvo
+## 👥 Target Audience
 
-- Jovens adultos e adultos que dividem moradia
-- Casais que desejam evitar conflitos por tarefas domésticas
-- Famílias que querem organizar a rotina da casa de forma colaborativa
+- Young adults and adults sharing a home
+- Couples wanting to avoid arguments over chores
+- Families looking for a more organized and fun way to manage the house
 
-## 🛠️ Tecnologias (previstas)
+## 🛠️ Tech Stack (Planned)
 
-- **Linguagem:** Swift (iOS)
-- **Frameworks:** SwiftUI, Combine
-- **Banco de dados:** Firebase ou Core Data (a definir)
-- **Notificações:** UserNotifications
-- **Design:** Figma (UI/UX prototipado com foco em gamificação)
+- **Language:** Swift (iOS)
+- **Frameworks:** UIKit
+- **Database:** CloudeKit
+- **Design:** Figma (UI/UX focused on gamification)
 
-## 📊 Validação do Problema
+## 🧪 Project Status
 
-Diversas pesquisas acadêmicas e sociais apontam que a má divisão de tarefas domésticas afeta diretamente a saúde mental, a harmonia nos lares e até mesmo relacionamentos.  
-Confira alguns estudos que embasam esse projeto:
+🚧 In early development stage  
+✅ Problem identified  
+📋 Survey ongoing  
+🎨 Design prototyping  
+🧠 Gamification concepts under testing
 
-- [CNN Brasil - Carga mental das mulheres](https://www.cnnbrasil.com.br/nacional/86-das-mulheres-consideram-ter-muita-carga-de-responsabilidades-aponta-pesquisa/)
-- [Drauzio Varella - Carga mental feminina](https://drauziovarella.uol.com.br/mulher/carga-mental-feminina-por-que-as-mulheres-estao-exaustas/)
-- [Estudo UFSM - Gamificação na organização doméstica](https://repositorio.ufsm.br/handle/1/24850)
+## 🤝 Contributions
 
-## 🧪 Status
+This is an academic and experimental project. Suggestions, ideas, and feedback are welcome!  
+Feel free to open an issue or reach out. ✨
 
-🚧 Em fase inicial de desenvolvimento.  
-✅ Problema validado com usuários  
-📋 Formulário em andamento  
-🎨 Protótipo em design  
-🧠 Ideias de gamificação em teste
+## 📸 Screenshots (Coming Soon)
 
-## 🤝 Contribuições
+Prototypes and UI previews will be added once the MVP is ready.
 
-Este é um projeto acadêmico e experimental. Sugestões, ideias e feedbacks são bem-vindos!  
-Abra uma issue ou entre em contato. ✨
+## 📝 License
 
-## 📸 Imagens (em breve)
-
-Vamos adicionar protótipos e capturas de tela assim que o MVP estiver disponível.
-
-## 📝 Licença
-
-Projeto acadêmico, sem fins comerciais no momento. Licença a definir.
+Academic, non-commercial project for now. License TBD.
 
 ---
 
-🧩 **Chorecade** — o arcade da vida doméstica.  
-Transforme a faxina em diversão, e a casa em um time!
+🧩 **Chorecade** — the arcade of home life.  
+Clean up, level up, live better!
