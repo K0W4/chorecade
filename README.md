@@ -32,7 +32,7 @@ This project follows the principles of **Challenge Based Learning (CBL)**, aimin
 
 - **Language:** Swift (iOS)
 - **Frameworks:** UIKit
-- **Database:** CloudeKit
+- **Database:** CloudKit
 - **Design:** Figma (UI/UX focused on gamification)
 
 ## 🧪 Project Status
