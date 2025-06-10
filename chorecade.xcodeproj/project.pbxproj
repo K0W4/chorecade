@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		3FE8F2EB2DF385D40043F98C /* chorecade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = chorecade.app; path = "/Users/joaop/developerAcademy/chorecade/build/Debug-iphoneos/chorecade.app"; sourceTree = "<absolute>"; };
+		3F8408252DF8BB8F000B8C8E /* chorecade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = chorecade.app; path = "/Users/joaop/developerAcademy/chorecade/build/Debug-iphoneos/chorecade.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -71,7 +71,7 @@
 			packageProductDependencies = (
 			);
 			productName = chorecade;
-			productReference = 3FE8F2EB2DF385D40043F98C /* chorecade.app */;
+			productReference = 3F8408252DF8BB8F000B8C8E /* chorecade.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
