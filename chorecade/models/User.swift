@@ -16,15 +16,16 @@ class User {
     
 //    var icloudRecordID: CKRecord.ID
     
-//    var avatar: Avatar
+    var avatar: Avatar
     
     var achievements: [Achievement] = Defaults.defaultAchievements
     
     var taskCounter: [TaskType : Int]
     
-    init(nickname: String, title: String, achievements: [Achievement], taskCounter: [TaskType : Int]) {
+    init(nickname: String, title: String, avatar: Avatar, achievements: [Achievement], taskCounter: [TaskType : Int]) {
         self.nickname = nickname
         self.title = title
+        self.avatar = avatar
         self.achievements = achievements
         self.taskCounter = taskCounter
     }
