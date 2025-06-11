@@ -6,10 +6,9 @@
 //
 
 protocol ViewCodeProtocol {
+    func setup()
     func addSubviews()
     func setupConstraints()
-    
-    func setup()
 }
 
 extension ViewCodeProtocol {
