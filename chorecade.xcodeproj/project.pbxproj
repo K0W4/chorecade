@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		C977C22C2DF8C4FA00E4FDC5 /* chorecade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = chorecade.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C977C22C2DF8C4FA00E4FDC5 /* chorecade.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = chorecade.app; path = "/Users/kowa/Documents/chorecade/build/Debug-iphoneos/chorecade.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -46,7 +46,6 @@
 			isa = PBXGroup;
 			children = (
 				3FE8F24F2DF37E9A0043F98C /* chorecade */,
-				C977C22C2DF8C4FA00E4FDC5 /* chorecade.app */,
 			);
 			sourceTree = "<group>";
 		};

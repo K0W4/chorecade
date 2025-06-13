@@ -6,6 +6,4 @@
 //
 
 protocol Repository {
-    
-    
 }

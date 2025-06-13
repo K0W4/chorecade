@@ -7,13 +7,10 @@
 import UIKit
 
 struct Defaults {
-    
     static let defaultAchievements: [Achievement] = []
     
-    static let defaultsHairs: [UIImage] = []
-    
-    // Skins
-    static let defaultsShirts: [UIImage] = []
-    static let defalutsPants: [UIImage] = []
-    static let defaultsPants: [UIImage] = []
+    static let defaultsAvatars: [UIImage] = []
+    static let defaultsHeads: [UIImage] = []
+    static let defaultsBodys: [UIImage] = []
+    static let defaultsShoes: [UIImage] = []
 }

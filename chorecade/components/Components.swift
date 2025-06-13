@@ -7,8 +7,7 @@
 import UIKit
 
 struct Components {
-    
-    // MARK: - Get label
+    // MARK: - Get Label
     static func getLabel(
         content: String,
         font: UIFont? = UIFont.systemFont(ofSize: 17),
@@ -20,7 +19,6 @@ struct Components {
         
         if font == nil {
             print("Font not found for \(content)")
-            
         }
         
         let label = UILabel()
@@ -34,7 +32,7 @@ struct Components {
         return label
     }
     
-    // MARK: - Get textField
+    // MARK: - Get TextField
     static func getTextField(
         placeholder: String = "",
         isPassword: Bool = false,
@@ -57,7 +55,7 @@ struct Components {
             textField.delegate = delegate
         }
         
-        // Add internal padding
+        // Add padding
         textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
         textField.leftViewMode = .always
         textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
@@ -66,7 +64,7 @@ struct Components {
         return textField
     }
     
-    // MARK: - Get button
+    // MARK: - Get Button
     static func getButton(
         content: String = "",
         image: UIImage? = nil,
@@ -99,6 +97,4 @@ struct Components {
         
         return button
     }
-    
-    
 }

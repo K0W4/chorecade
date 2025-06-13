@@ -9,9 +9,9 @@ import UIKit
 class Avatar {
     let baseAvatar: UIImage? = UIImage(named: "avatar")
     
-    var hairs: [UIImage] = Defaults.defaultsHairs
-    var shirts: [UIImage] = Defaults.defaultsShirts
-    var pants: [UIImage] = Defaults.defaultsPants
+    var heads: [UIImage] = Defaults.defaultsHeads
+    var bodyss: [UIImage] = Defaults.defaultsBodys
+    var shoes: [UIImage] = Defaults.defaultsShoes
     
     var hairIndex: Int = 0
     var shirtIndex: Int = 0

@@ -29,5 +29,4 @@ class User {
         self.achievements = achievements
         self.taskCounter = taskCounter
     }
-    
 }
