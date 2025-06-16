@@ -36,29 +36,34 @@ struct Components {
     static func getTextField(
         placeholder: String = "",
         isPassword: Bool = false,
-        height: Int = 46,
+        height: Int = 40,
         delegate: UITextFieldDelegate? = nil
     ) -> UITextField {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = placeholder
-        textField.tintColor = .cyan
-        textField.textColor = .cyan
-        textField.backgroundColor = .yellow
+        textField.tintColor = .black
+        textField.textColor = .black
+        textField.backgroundColor = .primaryPurple100
         textField.isSecureTextEntry = isPassword
         textField.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         textField.autocapitalizationType = .none
-        textField.layer.borderColor = UIColor.red.cgColor
-        textField.layer.cornerRadius = 8
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 16
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .foregroundColor: UIColor.black.withAlphaComponent(0.5)
+            ]
+        )
         
         if delegate != nil {
             textField.delegate = delegate
         }
         
         // Add padding
-        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftViewMode = .always
-        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.rightViewMode = .always
         
         return textField
