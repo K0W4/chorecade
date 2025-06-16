@@ -69,12 +69,12 @@ struct Components {
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
+        font: UIFont? = UIFont(name: "Jersey10-Regular", size: 32),
         fontSize: Int = 17,
-        textColor: UIColor = .white,
-        backgroundColor: UIColor = .cyan,
-        cornerRadius: Int = 8,
-        size: Int = 46
+        textColor: UIColor = .black,
+        backgroundColor: UIColor = .primaryPurple,
+        cornerRadius: Int = 16,
+        size: Int = 58
     ) -> UIButton {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
