@@ -10,9 +10,8 @@ struct Components {
     // MARK: - Get Label
     static func getLabel(
         content: String,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
-        fontSize: Int = 17,
-        textColor: UIColor = .red,
+        font: UIFont? = Fonts.taskCategory,
+        textColor: UIColor = .black,
         alignment: NSTextAlignment = .justified,
         hiden: Bool = false
     ) -> UILabel {
@@ -69,12 +68,12 @@ struct Components {
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        font: UIFont? = UIFont(name: "Jersey10-Regular", size: 32),
-        fontSize: Int = 17,
+        target: Any,
+        font: UIFont? = Fonts.button,
         textColor: UIColor = .black,
         backgroundColor: UIColor = .primaryPurple,
         cornerRadius: Int = 16,
-        size: Int = 58
+        size: Int = 68
     ) -> UIButton {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -88,12 +87,11 @@ struct Components {
             button.setTitle(content, for: .normal)
         }
         
-        button.addTarget(self, action: action, for: .touchUpInside)
+        button.addTarget(target, action: action, for: .touchUpInside)
         button.backgroundColor = backgroundColor
         button.layer.cornerRadius = CGFloat(cornerRadius)
         
         button.heightAnchor.constraint(equalToConstant: CGFloat(size)).isActive = true
-        
         
         return button
     }
