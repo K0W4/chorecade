@@ -10,11 +10,11 @@ struct Components {
     // MARK: - Get Label
     static func getLabel(
         content: String,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
+        font: UIFont? = Fonts.addTitleTasks,
         fontSize: Int = 17,
-        textColor: UIColor = .red,
+        textColor: UIColor = .black,
         alignment: NSTextAlignment = .justified,
-        hiden: Bool = false
+        hidden: Bool = false
     ) -> UILabel {
         
         if font == nil {
@@ -27,7 +27,7 @@ struct Components {
         label.textAlignment = alignment
         label.textColor = textColor
         label.font = font
-        label.isHidden = hiden
+        label.isHidden = hidden
         
         return label
     }
@@ -36,29 +36,34 @@ struct Components {
     static func getTextField(
         placeholder: String = "",
         isPassword: Bool = false,
-        height: Int = 46,
+        height: Int = 40,
         delegate: UITextFieldDelegate? = nil
     ) -> UITextField {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = placeholder
-        textField.tintColor = .cyan
-        textField.textColor = .cyan
-        textField.backgroundColor = .yellow
+        textField.tintColor = .black
+        textField.textColor = .black
+        textField.backgroundColor = .primaryPurple100
         textField.isSecureTextEntry = isPassword
         textField.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         textField.autocapitalizationType = .none
-        textField.layer.borderColor = UIColor.red.cgColor
-        textField.layer.cornerRadius = 8
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 16
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .foregroundColor: UIColor.black.withAlphaComponent(0.5)
+            ]
+        )
         
         if delegate != nil {
             textField.delegate = delegate
         }
         
         // Add padding
-        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftViewMode = .always
-        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.rightViewMode = .always
         
         return textField
@@ -69,7 +74,7 @@ struct Components {
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        font: UIFont? = UIFont(name: "Jersey10-Regular", size: 32),
+        font: UIFont? = Fonts.button,
         fontSize: Int = 17,
         textColor: UIColor = .black,
         backgroundColor: UIColor = .primaryPurple,
@@ -94,7 +99,7 @@ struct Components {
         
         button.heightAnchor.constraint(equalToConstant: CGFloat(size)).isActive = true
         
-        
         return button
     }
 }
+
