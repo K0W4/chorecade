@@ -10,11 +10,11 @@ struct Components {
     // MARK: - Get Label
     static func getLabel(
         content: String,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
+        font: UIFont? = Fonts.addTitleTasks,
         fontSize: Int = 17,
-        textColor: UIColor = .red,
+        textColor: UIColor = .black,
         alignment: NSTextAlignment = .justified,
-        hiden: Bool = false
+        hidden: Bool = false
     ) -> UILabel {
         
         if font == nil {
@@ -27,7 +27,7 @@ struct Components {
         label.textAlignment = alignment
         label.textColor = textColor
         label.font = font
-        label.isHidden = hiden
+        label.isHidden = hidden
         
         return label
     }
@@ -74,7 +74,7 @@ struct Components {
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        font: UIFont? = UIFont(name: "Jersey10-Regular", size: 32),
+        font: UIFont? = Fonts.button,
         fontSize: Int = 17,
         textColor: UIColor = .black,
         backgroundColor: UIColor = .primaryPurple,
@@ -99,7 +99,7 @@ struct Components {
         
         button.heightAnchor.constraint(equalToConstant: CGFloat(size)).isActive = true
         
-        
         return button
     }
 }
+

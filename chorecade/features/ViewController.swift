@@ -18,7 +18,16 @@ class ViewController: UIViewController {
     }
     
     @objc func handleOie() {
-        present(AddNewTaskModalViewController(), animated: true)
+        
+        let modalViewController = AddNewTaskModalViewController()
+        
+        modalViewController.modalPresentationStyle = .pageSheet
+
+        if let sheet = modalViewController.sheetPresentationController {
+            sheet.prefersGrabberVisible = true
+        }
+        
+        present(modalViewController, animated: true)
     }
 }
 
