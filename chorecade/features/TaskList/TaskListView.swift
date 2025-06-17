@@ -15,7 +15,7 @@ class TaskListView: UIView {
         return imageView
     }()
     
-    lazy var addNewTaskButton = Components.getButton(content: "Add a new task +", action: #selector(TaskListViewController.handleTap), target: self)
+    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(TaskListViewController.handleTap), target: self)
     
     lazy var taskLabel = Components.getLabel(content: "Recent Tasks", font: Fonts.taskDetails)
     
@@ -24,7 +24,9 @@ class TaskListView: UIView {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(TaskListTableViewCell.self, forCellReuseIdentifier: "taskList-cell")
         tableView.dataSource = self
-        tableView.backgroundColor = .red
+        tableView.delegate = self
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
         return tableView
     }()
     
@@ -86,9 +88,16 @@ extension TaskListView: UITableViewDataSource {
         
         let mock = mockTasks[indexPath.row]
         cell.taskTitleLabel.text = mock.title
-        cell.taskSubtitleLabel.text = mock.description
-        cell.pointsBadge.text = "10"
+        cell.taskDescriptionLabel.text = mock.description
+        cell.taskPointsLabel.text = "+10 points"
+        cell.nameUserLabel.text = "Bibi18"
         
         return cell
+    }
+}
+
+extension TaskListView: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 136
     }
 }
