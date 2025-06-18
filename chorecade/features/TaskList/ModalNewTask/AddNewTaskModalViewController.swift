@@ -63,7 +63,7 @@ class AddNewTaskModalViewController: UIViewController {
         size: 58,
     )
     
-    lazy var descriptionLabel = Components.getLabel(content: "Add Description")
+    lazy var descriptionLabel = Components.getLabel(content: "Add Description", font: Fonts.descriptionLabel)
     
     lazy var descriptionTextField = Components.getTextField(
         placeholder: "Ex: Cleaned the airfryer too"

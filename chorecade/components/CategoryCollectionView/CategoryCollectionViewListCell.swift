@@ -16,32 +16,36 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         let label = UILabel()
         label.font = Fonts.nameTasksCategories
         label.numberOfLines = 2
-        label.lineBreakMode = .byTruncatingTail
+        label.lineBreakMode = .byWordWrapping
         label.textColor = .black
         return label
     }()
     
+    lazy var pointsLabel = Components.getLabel(content: "", font: Fonts.points, alignment: .center)
     
-    private lazy var pointsLabel: UILabel = {
-        let label = UILabel()
-        label.font = Fonts.points
-        label.textColor = .black
-        label.backgroundColor = .yellowPoints
-        label.layer.cornerRadius = 16
-        label.textAlignment = .right
-        return label
+    lazy var pointsStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [pointsLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.backgroundColor = .yellowPoints
+        stackView.alignment = .center
+        stackView.layer.cornerRadius = 16
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
+        
+        return stackView
     }()
-    
     
     private lazy var mainStack: UIStackView = {
         let spacer = UIView()
         spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
         
-        let stackView = UIStackView(arrangedSubviews: [titleLabel, spacer, pointsLabel])
+        let stackView = UIStackView(arrangedSubviews: [titleLabel, spacer, pointsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
         stackView.spacing = 12
         stackView.alignment = .center
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 16, left: 0, bottom: 16, right: 0)
         return stackView
     }()
     
@@ -62,6 +66,8 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         contentView.backgroundColor = .primaryPurple100
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
+        
+        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
     }
     
@@ -84,6 +90,11 @@ extension CategoryCollectionViewListCell: ViewCodeProtocol {
             mainStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             mainStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             mainStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            
+            pointsStack.heightAnchor.constraint(equalToConstant: 26),
+            
+            
+
             
         ])
     }

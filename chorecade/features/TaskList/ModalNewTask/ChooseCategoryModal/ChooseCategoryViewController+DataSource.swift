@@ -15,13 +15,13 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        
+        let allCategories = CategoriesList.allCategories
         if section == 0 {
-            return 12
+            return allCategories.filter { $0.nivel == 1 }.count
         } else if section == 1 {
-            return 10
+            return allCategories.filter { $0.nivel == 2 }.count
         }
-        return 5
+        return allCategories.filter { $0.nivel == 3 }.count
         
     }
     
@@ -42,9 +42,9 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
         
         
         let sectionTitles = [
-            "Simple Tasks (5 - 10 points)",
-            "Medium Tasks (15 - 25 points)",
-            "Big Tasks (30 - 50 points)"]
+            "Simple Tasks",
+            "Medium Tasks",
+            "Big Tasks"]
         
         header.configure(with: sectionTitles[indexPath.section])
         return header
@@ -52,17 +52,24 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    
         
-        // Caso tenha despesas, mostra a cell normal
+    
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCollectionViewListCell.identifier, for: indexPath) as? CategoryCollectionViewListCell else {
             fatalError("Cell not found")
         }
         
+        let allCategories = CategoriesList.allCategories
+  
         cell.configure(
-            title: "Clean pet’s bed or resting area",
-            points: 12
+            title: allCategories[indexPath.item].title,
+           points: allCategories[indexPath.item].points,
         )
+        
+        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.background
+        backgroundView.clipsToBounds = true
+        cell.backgroundView = backgroundView
         
         return cell
     }
