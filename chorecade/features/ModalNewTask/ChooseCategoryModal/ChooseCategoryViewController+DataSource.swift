@@ -59,7 +59,6 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
             fatalError("Cell not found")
         }
         
-        
         cell.configure(
             title: "Clean pet’s bed or resting area",
             points: 12

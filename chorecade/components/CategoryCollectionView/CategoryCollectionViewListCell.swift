@@ -15,7 +15,7 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
     private lazy var titleLabel: UILabel = {
         let label = UILabel()
         label.font = Fonts.nameTasksCategories
-        label.numberOfLines = 1
+        label.numberOfLines = 2
         label.lineBreakMode = .byTruncatingTail
         label.textColor = .black
         return label
@@ -62,6 +62,7 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         contentView.backgroundColor = .primaryPurple100
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
+        
     }
     
     required init?(coder: NSCoder) {
