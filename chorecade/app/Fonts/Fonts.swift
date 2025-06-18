@@ -17,7 +17,7 @@ struct Fonts {
     static let nameTask = UIFont(name: "Jersey10-Regular", size: 32)
     static let nameTasksCategories = UIFont(name: "Jersey10-Regular", size: 29)
     static let nameOnTasks = UIFont(name: "Jersey10-Regular", size: 24)
-    static let taskCategory = UIFont(name: "Jersey10-Regular", size: 24)
+    static let taskCategory = UIFont(name: "SFProText-Regular", size: 24)
     static let beforeAndAfter = UIFont(name: "Jersey10-Regular", size: 24)
     static let taskDetails = UIFont(name: "Jersey10-Regular", size: 24)
 }

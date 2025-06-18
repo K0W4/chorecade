@@ -106,7 +106,16 @@ class AddNewTaskModalViewController: UIViewController {
     // MARK: Functions
     
     @objc func handleCategoryButton() {
-        print("category button tapped")
+        
+        let modalViewController = ChooseCategoryViewController()
+        
+        modalViewController.modalPresentationStyle = .pageSheet
+
+        if let sheet = modalViewController.sheetPresentationController {
+            sheet.prefersGrabberVisible = true
+        }
+        
+        present(modalViewController, animated: true)
     }
     
     @objc func addButtonTapped() {
@@ -130,6 +139,8 @@ extension AddNewTaskModalViewController: ViewCodeProtocol {
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            
+            // Stack View
             
             stackView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 32),
             stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
