@@ -30,6 +30,28 @@ class TaskListView: UIView {
         return tableView
     }()
     
+    lazy var tasksStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [taskLabel, tasksTableView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 16
+        return stackView
+    }()
+    
+    lazy var emptyStateLabel = Components.getLabel(content: "Click on “add a new task” to add a new task", font: Fonts.nameTasksCategories, textColor: .systemGray2)
+    
+    private let scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    
+    private let contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
     // MARK: - Closure
     var onAddTaskButtonTaped: (() -> Void)?
     
@@ -59,24 +81,35 @@ class TaskListView: UIView {
 // MARK: - Extensions
 extension TaskListView: ViewCodeProtocol {
     func addSubviews() {
-        addSubview(addNewTaskButton)
-        addSubview(taskLabel)
-        addSubview(tasksTableView)
+        addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(addNewTaskButton)
+        contentView.addSubview(tasksStack)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            addNewTaskButton.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 320),
-            addNewTaskButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            addNewTaskButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+
+            addNewTaskButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 320),
+            addNewTaskButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            addNewTaskButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            taskLabel.topAnchor.constraint(equalTo: addNewTaskButton.bottomAnchor, constant: 24),
-            taskLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            tasksTableView.heightAnchor.constraint(equalToConstant: CGFloat(3 * 136 + 32)),
             
-            tasksTableView.topAnchor.constraint(equalTo: taskLabel.bottomAnchor, constant: 16),
-            tasksTableView.leadingAnchor.constraint(equalTo: safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            tasksTableView.trailingAnchor.constraint(equalTo: safeAreaLayoutGuide.trailingAnchor, constant: -16),
-            tasksTableView.heightAnchor.constraint(equalToConstant: 300),
+            tasksStack.topAnchor.constraint(equalTo: addNewTaskButton.bottomAnchor, constant: 24),
+            tasksStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            tasksStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            tasksStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -32)
         ])
     }
 }
@@ -102,6 +135,12 @@ extension TaskListView: UITableViewDataSource {
         
         return cell
     }
+    
+//    func numberOfSections(in tableView: UITableView) -> Int {
+//        emptyView.isHidden = !sections.isEmpty
+//        tableView.isHidden = sections.isEmpty
+//        return sections.count
+//    }
 }
 
 extension TaskListView: UITableViewDelegate {
