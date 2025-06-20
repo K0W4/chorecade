@@ -201,8 +201,12 @@ extension CreateGroupViewController {
 
         let groupRecord = CKRecord(recordType: "Group")
         groupRecord["name"] = groupName as NSString
+        groupRecord["startDate"] = Date() as NSDate
+        groupRecord["duration"] = 1 as NSNumber
         groupRecord["groupCode"] = groupCode as NSString
         groupRecord["members"] = [userIDString] as NSArray
+        groupRecord["prize"] = "Default Prize" as NSString
+        groupRecord["tasks"] = [String]() as NSArray
 
         // Step: Update user's groupCode
         addGroupCodeTo(user: userIDString, code: groupCode)
@@ -329,35 +333,4 @@ extension CreateGroupViewController {
         
         return savedGroup
     }
-    
-    // MARK: Fetch Group Record
-    /*
-    private func fetchGroupRecord(byCode code: String) {
-        CloudKit.fetchGroupRecord(byCode: code) { result in
-            switch result {
-            case .success(let groupRecord):
-                print("Group found with name: \(groupRecord["name"] ?? "Unnamed")")
-                
-                if let members = groupRecord["members"] as? [String] {
-                    print("Group has \(members.count) members")
-                    for memberID in members {
-                        CloudKit.discoveriCloudUser(id: memberID) { result in
-                            print(result ?? "fuck")
-                        }
-                        print("Member ID: \(memberID)")
-                    }
-                } else {
-                    print("Group has no members.")
-                }
-                
-            case .failure(let error):
-                print("Failed to fetch group: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    private func discoverUserIdentity(byID userID: CKRecord.ID) {
-        
-    }
-     */
 }

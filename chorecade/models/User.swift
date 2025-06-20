@@ -7,23 +7,17 @@
 import Foundation
 import CloudKit
 
-class User {
+struct User {
     var groupCode: String?
     var nickname: String
     
+    let recordID: CKRecord.ID
+    
     var title: String?
     
-    var avatar: Avatar
+    var avatar: Avatar = Avatar()
     
     var achievements: [Achievement] = Defaults.defaultAchievements
     
-    var taskCounter: [TaskType : Int]
-    
-    init(nickname: String, title: String? = nil, avatar: Avatar, achievements: [Achievement], taskCounter: [TaskType : Int]) {
-        self.nickname = nickname
-        self.title = title
-        self.avatar = avatar
-        self.achievements = achievements
-        self.taskCounter = taskCounter
-    }
+    var taskCounter: [TaskType : Int] = [:]
 }
