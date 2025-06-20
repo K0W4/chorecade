@@ -8,11 +8,10 @@ import Foundation
 import CloudKit
 
 class User {
-    let id: UUID = UUID()
-    
+    var groupCode: String?
     var nickname: String
     
-    var title: String
+    var title: String?
     
 //    var icloudRecordID: CKRecord.ID
     
@@ -22,7 +21,7 @@ class User {
     
     var taskCounter: [TaskType : Int]
     
-    init(nickname: String, title: String, avatar: Avatar, achievements: [Achievement], taskCounter: [TaskType : Int]) {
+    init(nickname: String, title: String? = nil, avatar: Avatar, achievements: [Achievement], taskCounter: [TaskType : Int]) {
         self.nickname = nickname
         self.title = title
         self.avatar = avatar
