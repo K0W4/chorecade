@@ -19,7 +19,7 @@ class ViewController: UIViewController {
     
     @objc func handleOie() {
         
-        let modalViewController = AddNewTaskModalViewController()
+        let modalViewController = ChooseCategoryViewController()
         
         modalViewController.modalPresentationStyle = .pageSheet
 
