@@ -17,8 +17,8 @@ class TaskListView: UIView {
     
     lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap), target: self)
     
-    lazy var taskLabel = Components.getLabel(content: "Recent Tasks", font: Fonts.taskDetails)
-    
+    lazy var groupSelector = GroupSelector()
+        
     lazy var tasksTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -31,7 +31,7 @@ class TaskListView: UIView {
     }()
     
     lazy var tasksStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [taskLabel, tasksTableView])
+        let stackView = UIStackView(arrangedSubviews: [groupSelector, tasksTableView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.spacing = 16
