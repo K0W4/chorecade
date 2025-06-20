@@ -33,10 +33,28 @@ class ModalHeader: UIView {
         return button
     }()
     
-    private lazy var stack: UIStackView = {
+    private lazy var searchBar: UISearchBar = {
+        var searchBar = UISearchBar()
+        searchBar.placeholder = "Search"
+        searchBar.searchTextField.layer.cornerRadius = 8
+        searchBar.searchTextField.clipsToBounds = true
+        searchBar.tintColor = .black
+        searchBar.backgroundImage = UIImage()
+        searchBar.isHidden = true
+        return searchBar
+    }()
+    
+    private lazy var headerStack: UIStackView = {
         var stack = UIStackView(arrangedSubviews: [cancelButton, titleLabel, addButton])
         stack.translatesAutoresizingMaskIntoConstraints = false
         stack.distribution = .equalCentering
+        return stack
+    }()
+    
+    private lazy var mainStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [headerStack,searchBar])
+        stack.axis = .vertical
+        stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
     
@@ -57,6 +75,12 @@ class ModalHeader: UIView {
     var disableAddButton: Bool = false {
         didSet {
             addButton.isEnabled = disableAddButton
+        }
+    }
+    
+    var showsSearchBar: Bool = false {
+        didSet {
+            searchBar.isHidden = !showsSearchBar
         }
     }
     
@@ -90,17 +114,21 @@ class ModalHeader: UIView {
 
 extension ModalHeader: ViewCodeProtocol {
     func addSubviews() {
-        addSubview(stack)
+        addSubview(mainStack)
         addSubview(separator)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: self.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
             
-            separator.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 10),
+            headerStack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 16),
+            headerStack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -16),
+            
+            mainStack.topAnchor.constraint(equalTo: self.topAnchor),
+            mainStack.leadingAnchor.constraint(equalTo: self.leadingAnchor),
+            mainStack.trailingAnchor.constraint(equalTo: self.trailingAnchor),
+
+            separator.topAnchor.constraint(equalTo: mainStack.bottomAnchor, constant: 10),
             separator.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             separator.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             separator.trailingAnchor.constraint(equalTo: self.trailingAnchor),

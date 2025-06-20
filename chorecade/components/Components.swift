@@ -74,13 +74,12 @@ struct Components {
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        target: Any,
         font: UIFont? = Fonts.button,
         fontSize: Int = 17,
         textColor: UIColor = .black,
         backgroundColor: UIColor = .primaryPurple,
         cornerRadius: Int = 16,
-        size: Int = 68
+        size: Int = 58
     ) -> UIButton {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -94,7 +93,7 @@ struct Components {
             button.setTitle(content, for: .normal)
         }
         
-        button.addTarget(target, action: action, for: .touchUpInside)
+        button.addTarget(self, action: action, for: .touchUpInside)
         button.backgroundColor = backgroundColor
         button.layer.cornerRadius = CGFloat(cornerRadius)
         

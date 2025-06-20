@@ -14,8 +14,9 @@ class TaskListView: UIView {
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
-    
-    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap), target: self)
+
+    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap))
+
     
     lazy var groupSelector = GroupSelector()
         
