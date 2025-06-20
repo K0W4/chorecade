@@ -14,8 +14,9 @@ class TaskListView: UIView {
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
-    
-    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(TaskListViewController.handleTap))
+
+    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap), target: self)
+
     
     lazy var taskLabel = Components.getLabel(content: "Recent Tasks", font: Fonts.taskDetails)
     
@@ -33,11 +34,10 @@ class TaskListView: UIView {
     // MARK: - Closure
     var onAddTaskButtonTaped: (() -> Void)?
     
-    private let mockTasks: [Task] = [
-        Task(title: "Lavar a louça", description: "Usar sabão neutro", type: [.cleaning], level: 1),
-        Task(title: "Varrer a casa", description: "Não esquecer os cantos!", type: [.cleaning], level: 2),
-        Task(title: "Tirar o lixo", description: "Levar o saco para fora", type: [.cleaning], level: 1)
-    ]
+    // MARK: - Mocks
+    private let mockTitles: [String] = ["Clean litter box / pick up poop", "Brush pet’s fur", "Full house cleaning"]
+    private let mockDescriptions: [String] = ["Collected and Cleaned the floor", "I brushed Joaquim", "Cleaned all places in the house"]
+    private let mockUsers: [String] = ["Julian", "Bibi18", "JujuJBah"]
     
     // MARK: - Functions
     override init(frame: CGRect) {
@@ -48,6 +48,12 @@ class TaskListView: UIView {
      
     required init?(coder: NSCoder) {
         fatalError("not implemented")
+    }
+    
+    var action: () -> Void = {}
+    
+    @objc func handleTap() {
+        action()
     }
 }
 
@@ -86,11 +92,14 @@ extension TaskListView: UITableViewDataSource {
             return UITableViewCell()
         }
         
-        let mock = mockTasks[indexPath.row]
-        cell.taskTitleLabel.text = mock.title
-        cell.taskDescriptionLabel.text = mock.description
+        let title = mockTitles[indexPath.row]
+        let description = mockDescriptions[indexPath.row]
+        let user = mockUsers[indexPath.row]
+        
+        cell.taskTitleLabel.text = title
+        cell.taskDescriptionLabel.text = description
         cell.taskPointsLabel.text = "+10 points"
-        cell.nameUserLabel.text = "Bibi18"
+        cell.nameUserLabel.text = user
         
         return cell
     }

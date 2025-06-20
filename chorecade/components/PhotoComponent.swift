@@ -33,7 +33,7 @@ class PhotoComponent: UIView {
         var imageView = UIImageView()
         imageView.contentMode = .center
         imageView.image = UIImage(systemName: "camera")
-        imageView.tintColor = .secondary
+        imageView.tintColor = .secondaryBlue
         imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView

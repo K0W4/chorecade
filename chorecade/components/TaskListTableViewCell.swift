@@ -52,7 +52,10 @@ class TaskListTableViewCell: UITableViewCell {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.backgroundColor = .yellowPoints
         stackView.alignment = .center
+        stackView.distribution = .equalSpacing
         stackView.layer.cornerRadius = 16
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
         return stackView
     }()
     
@@ -126,7 +129,7 @@ extension TaskListTableViewCell: ViewCodeProtocol {
             cellStack.trailingAnchor.constraint(equalTo: trailingAnchor),
             cellStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             
-            taskPointsStack.widthAnchor.constraint(equalToConstant: 72),
+            taskPointsStack.heightAnchor.constraint(equalToConstant: 26),
             taskImage.widthAnchor.constraint(equalToConstant: 45),
             iconUserImage.widthAnchor.constraint(equalToConstant: 28),
         ])

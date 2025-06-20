@@ -12,6 +12,7 @@ class AddNewTaskModalViewController: UIViewController {
     // MARK: Variables
     
     var activePhotoComponent: PhotoComponent?
+    var selectedCategory: Category?
     
     // MARK: Views
     
@@ -37,7 +38,6 @@ class AddNewTaskModalViewController: UIViewController {
         return photo
     }()
     
-    
     lazy var addAfterPhoto: PhotoComponent = {
         var photo = PhotoComponent()
         photo.viewController = self
@@ -45,7 +45,6 @@ class AddNewTaskModalViewController: UIViewController {
         photo.translatesAutoresizingMaskIntoConstraints = false
         return photo
     }()
-    
     
     lazy var addPhotoStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [addBeforePhoto, addAfterPhoto])
@@ -59,11 +58,27 @@ class AddNewTaskModalViewController: UIViewController {
     lazy var categoryButton = Components.getButton(
         content: "Category",
         action: #selector(handleCategoryButton),
+        target: self,
         size: 58,
-        
     )
     
-    lazy var descriptionLabel = Components.getLabel(content: "Add Description")
+    lazy var categorySelectionView: SelectedCategory = {
+        var categoryComponent = SelectedCategory()
+        categoryComponent.title = selectedCategory?.title ?? ""
+        categoryComponent.points = selectedCategory?.points ?? 0
+        categoryComponent.onClose = { [weak self] in
+            self?.selectedCategory = nil
+            self?.categorySelectionView.isHidden = true
+        }
+        categoryComponent.selected = true
+        categoryComponent.isHidden = true
+        return categoryComponent
+    }()
+        
+    lazy var descriptionLabel = Components.getLabel(
+        content: "Add Description",
+        font: Fonts.descriptionLabel
+    )
     
     lazy var descriptionTextField = Components.getTextField(
         placeholder: "Ex: Cleaned the airfryer too"
@@ -78,7 +93,7 @@ class AddNewTaskModalViewController: UIViewController {
     }()
     
     lazy var stackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [addPhotoStackView, categoryButton, descriptionStackView])
+        let stackView = UIStackView(arrangedSubviews: [addPhotoStackView, categoryButton, categorySelectionView, descriptionStackView])
         stackView.axis = .vertical
         stackView.spacing = 16
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -98,19 +113,64 @@ class AddNewTaskModalViewController: UIViewController {
         addBeforePhoto.onPhotoRequest = { [weak self] in
             self?.activePhotoComponent = self?.addBeforePhoto
         }
-
+        
         addAfterPhoto.onPhotoRequest = { [weak self] in
             self?.activePhotoComponent = self?.addAfterPhoto
-        }    }
+        }
+    }
+
+    
     
     // MARK: Functions
     
     @objc func handleCategoryButton() {
-        print("category button tapped")
+        
+        let modalViewController = ChooseCategoryViewController()
+        
+        modalViewController.modalPresentationStyle = .pageSheet
+        
+        modalViewController.onCategorySelected = { [weak self] selected in
+            self?.selectedCategory = selected
+            self?.categorySelectionView.title = selected.title
+            self?.categorySelectionView.points = selected.points
+            self?.categorySelectionView.selected = true
+            self?.categorySelectionView.isHidden = false
+        }
+
+        
+        if let sheet = modalViewController.sheetPresentationController {
+            sheet.prefersGrabberVisible = true
+        }
+        
+        present(modalViewController, animated: true)
     }
     
     @objc func addButtonTapped() {
-        print("add button tapped")
+        
+        
+        guard let beforeImage = addBeforePhoto.selectedImage else {
+            print("You must select at least the 'before' photo.")
+            return
+        }
+
+        print("BEFORE photo: selected \(beforeImage)")
+
+        if let afterImage = addAfterPhoto.selectedImage {
+            print("AFTER photo: selected")
+        } else {
+            print("AFTER photo: not selected")
+        }
+
+        if let category = selectedCategory {
+            print("Category selected: \(category.title), Points: \(category.points), Level: \(category.nivel)")
+        } else {
+            print("No category selected")
+        }
+
+        let descriptionText = descriptionTextField.text ?? ""
+        print("Description: \(descriptionText)")
+        
+    
         //        dismiss(animated: true)
     }
     
@@ -130,6 +190,8 @@ extension AddNewTaskModalViewController: ViewCodeProtocol {
             headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            
+            // Stack View
             
             stackView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 32),
             stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
