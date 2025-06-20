@@ -15,7 +15,7 @@ class TaskListView: UIView {
         return imageView
     }()
 
-    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap), target: self)
+    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap))
 
     
     lazy var taskLabel = Components.getLabel(content: "Recent Tasks", font: Fonts.taskDetails)

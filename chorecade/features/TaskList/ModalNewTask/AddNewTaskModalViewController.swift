@@ -58,7 +58,6 @@ class AddNewTaskModalViewController: UIViewController {
     lazy var categoryButton = Components.getButton(
         content: "Category",
         action: #selector(handleCategoryButton),
-        target: self,
         size: 58,
     )
     

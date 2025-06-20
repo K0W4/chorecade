@@ -10,7 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     
-    lazy var oie = Components.getButton(content: "Add New Task +", action: #selector(handleOie), target: self)
+    lazy var oie = Components.getButton(content: "Add New Task +", action: #selector(handleOie))
     
     override func viewDidLoad() {
         super.viewDidLoad()
