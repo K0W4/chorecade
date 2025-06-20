@@ -18,6 +18,7 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         label.numberOfLines = 2
         label.lineBreakMode = .byWordWrapping
         label.textColor = .black
+        label.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return label
     }()
     
@@ -28,7 +29,7 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.backgroundColor = .yellowPoints
         stackView.alignment = .center
-        stackView.layer.cornerRadius = 16
+        stackView.layer.cornerRadius = 12
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
         
@@ -66,8 +67,6 @@ class CategoryCollectionViewListCell: UICollectionViewListCell {
         contentView.backgroundColor = .primaryPurple100
         contentView.layer.cornerRadius = 12
         contentView.layer.masksToBounds = true
-        
-        titleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
     }
     

@@ -9,6 +9,7 @@ import UIKit
 
 class ChooseCategoryViewController: UIViewController {
     
+    
     // MARK: Views
     
     lazy var headerView: ModalHeader = {
@@ -32,8 +33,6 @@ class ChooseCategoryViewController: UIViewController {
         config.headerMode = .supplementary
         config.showsSeparators = false
         config.backgroundColor = .clear
-        
-        
         
 //        config.trailingSwipeActionsConfigurationProvider = { [unowned self] indexPath in
 //
@@ -98,7 +97,15 @@ class ChooseCategoryViewController: UIViewController {
         return collectionView
     }()
     
+    // MARK: Properties
     
+    var categories = CategoriesList.allCategories {
+        didSet {
+            collectionView.reloadData()
+        }
+    }
+    
+    var onCategorySelected: ((Category) -> Void)?
     
     // MARK: ViewDidLoad
 
@@ -113,6 +120,7 @@ class ChooseCategoryViewController: UIViewController {
     @objc func addButtonTapped() {
         print("oi")
     }
+    
     
 
 

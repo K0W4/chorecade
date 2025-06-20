@@ -10,6 +10,7 @@ import UIKit
 struct Fonts {
     static let titleConcludedTask = UIFont(name: "Jersey10-Regular", size: 32)
     static let points = UIFont(name: "Jersey10-Regular", size: 17)
+    static let taskTitleSelected = UIFont(name: "Jersey10-Regular", size: 22)
     static let titleScreen = UIFont(name: "Jersey10-Regular", size: 24)
     static let button = UIFont(name: "Jersey10-Regular", size: 32)
     static let addTitleTasks = UIFont(name: "Jersey10-Regular", size: 20)

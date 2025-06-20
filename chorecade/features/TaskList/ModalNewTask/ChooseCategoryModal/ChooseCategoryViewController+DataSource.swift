@@ -15,13 +15,12 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        let allCategories = CategoriesList.allCategories
         if section == 0 {
-            return allCategories.filter { $0.nivel == 1 }.count
+            return categories.filter { $0.nivel == 1 }.count
         } else if section == 1 {
-            return allCategories.filter { $0.nivel == 2 }.count
+            return categories.filter { $0.nivel == 2 }.count
         }
-        return allCategories.filter { $0.nivel == 3 }.count
+        return categories.filter { $0.nivel == 3 }.count
         
     }
     
@@ -58,12 +57,26 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
             fatalError("Cell not found")
         }
         
-        let allCategories = CategoriesList.allCategories
-  
-        cell.configure(
-            title: allCategories[indexPath.item].title,
-           points: allCategories[indexPath.item].points,
-        )
+        if indexPath.section == 0 {
+            let category = categories.filter { $0.nivel == 1 }[indexPath.item]
+            cell.configure(
+                title: category.title,
+                points: category.points,
+            )
+        } else if indexPath.section == 1 {
+            let category = categories.filter { $0.nivel == 2 }[indexPath.item]
+            cell.configure(
+                title: category.title,
+                points: category.points,
+            )
+        } else {
+            let category = categories.filter { $0.nivel == 3 }[indexPath.item]
+            cell.configure(
+                title: category.title,
+                points: category.points,
+            )
+        }
+       
         
         
         let backgroundView = UIView()
