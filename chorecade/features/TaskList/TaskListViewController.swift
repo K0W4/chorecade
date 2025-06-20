@@ -19,7 +19,7 @@ class TaskListViewController: UIViewController {
     // MARK: - Functions
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        Repository.start()
         setup()
     }
     

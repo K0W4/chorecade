@@ -14,10 +14,27 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         
         // MARK: - iCloud login verification
-        window.rootViewController = TaskListViewController()
+        window.rootViewController = PermissionViewController()
         
         self.window = window
         window.makeKeyAndVisible()
+    }
+    
+    func changeRootViewController(_ vc: UIViewController, animated: Bool = true) {
+        guard let window = self.window else {
+            return
+        }
+        
+        // change the root view controller to your specific view controller
+        if animated {
+                UIView.transition(with: window, duration: 0.5, options: [.transitionCrossDissolve], animations: {
+                    window.rootViewController = vc
+                }, completion: nil)
+            } else {
+                window.rootViewController = vc
+            }
+        // pesquisar coordinator - animacoes
+        window.rootViewController = vc
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

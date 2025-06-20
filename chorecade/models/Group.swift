@@ -21,7 +21,7 @@ class Group {
     
     var users: [User] = []
     
-    var tasks: [Task] = []
+    var tasks: [Taskk] = []
     
     init(name: String, startDate: Date, duration: Int, prize: String) {
         self.name = name
