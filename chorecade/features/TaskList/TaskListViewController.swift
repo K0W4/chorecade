@@ -9,7 +9,7 @@ import UIKit
 
 class TaskListViewController: UIViewController {
     // MARK: - View
-    private lazy var taskListView: TaskListView = {
+    lazy var taskListView: TaskListView = {
         let view = TaskListView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.action = handleTap
@@ -19,7 +19,6 @@ class TaskListViewController: UIViewController {
     // MARK: - Functions
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         setup()
     }
     

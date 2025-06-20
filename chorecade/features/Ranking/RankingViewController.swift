@@ -18,15 +18,12 @@ public class RankingViewController: UIViewController {
         return empty
     }()
     
-    
     public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .background
         
         setup()
-        
     }
-    
 }
 
 extension RankingViewController: ViewCodeProtocol {
