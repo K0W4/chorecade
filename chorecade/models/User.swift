@@ -13,8 +13,6 @@ class User {
     
     var title: String?
     
-//    var icloudRecordID: CKRecord.ID
-    
     var avatar: Avatar
     
     var achievements: [Achievement] = Defaults.defaultAchievements

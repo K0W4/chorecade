@@ -7,15 +7,14 @@
 import Foundation
 
 class Group {
-    let id: UUID = UUID()
-    
     var name: String
     
     var startDate: Date
-    var duration: TimeInterval
+    var duration: Int
+    
     
     var endDate: Date {
-        startDate + duration
+        Calendar.current.date(byAdding: .day, value: duration, to: startDate) ?? Date()
     }
     
     var prize: String
@@ -24,7 +23,7 @@ class Group {
     
     var tasks: [Task] = []
     
-    init(name: String, startDate: Date, duration: TimeInterval, prize: String) {
+    init(name: String, startDate: Date, duration: Int, prize: String) {
         self.name = name
         self.startDate = startDate
         self.duration = duration

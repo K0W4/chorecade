@@ -8,8 +8,6 @@ import Foundation
 import UIKit
 
 class Task {
-    let id: UUID = UUID()
-    
     let title: String
     let description: String
     
@@ -18,9 +16,7 @@ class Task {
     
     let beforePic: UIImage? = nil
     let afterPic: UIImage? = nil
-    
-    var isDone: Bool = false
-    
+        
     init(title: String, description: String = "", type: [TaskType], level: Int) {
         self.title = title
         self.description = description
