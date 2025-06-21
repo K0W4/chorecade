@@ -10,73 +10,67 @@ import UIKit
 
 class CreateGroupViewController: UIViewController {
     
+    var userGroups: [CKRecord] = []
+    
     // MARK: - Components
-    lazy var codeTextField: UITextField = {
-        let tf = UITextField()
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.placeholder = "Group Code"
-        tf.backgroundColor = .systemBackground
-        tf.borderStyle = .roundedRect
-        tf.textColor = .label
-        return tf
+    private lazy var groupLabel: UILabel = {
+        var label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "Jersey10-Regular", size: 48)
+        label.textAlignment = .center
+        label.text = "Group"
+        label.textColor = .black
+        return label
     }()
     
-    lazy var joinButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Join Group", for: .normal)
-        button.addTarget(self, action: #selector(handleJoinButton), for: .touchUpInside)
-        button.backgroundColor = .systemPink
-        button.tintColor = .white
-        button.layer.cornerRadius = 8
-        return button
+    private lazy var createGroupButton = Components.getButton(content: " Create Group + ", action: #selector( CreateGroupViewController.handleCreateButton), font: UIFont(name: "Jersey10-Regular", size: 24))
+    
+    lazy var topStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [groupLabel, createGroupButton])
+        stackView.axis = .vertical
+        stackView.distribution = .fillEqually
+        stackView.spacing = 24
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        return stackView
     }()
     
-    lazy var joinStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [codeTextField, joinButton])
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 8
-        return stack
+    private lazy var pasteLabel: UILabel = {
+        var label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont(name: "Jersey10-Regular", size: 20)
+        label.textAlignment = .center
+        label.text = "Paste code:"
+        label.textColor = .black
+        return label
     }()
     
-    
-    
-    lazy var nameTextField: UITextField = {
-        let tf = UITextField()
-        tf.translatesAutoresizingMaskIntoConstraints = false
-        tf.placeholder = "Group Name"
-        tf.backgroundColor = .systemBackground
-        tf.borderStyle = .roundedRect
-        tf.textColor = .label
-        return tf
+    private lazy var codeTextField: UITextField = {
+        let textField = Components.getTextField(placeholder: "Ex: #6AE8T")
+        textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        return textField
     }()
     
-    lazy var createButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.setTitle("Create Group", for: .normal)
-        button.addTarget(self, action: #selector(handleCreateButton), for: .touchUpInside)
-        button.backgroundColor = .systemPink
-        button.tintColor = .white
-        button.layer.cornerRadius = 8
-        return button
+    lazy var textFieldStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [pasteLabel, codeTextField])
+        stackView.axis = .vertical
+        stackView.alignment = .leading
+        stackView.distribution = .fill
+        stackView.spacing = 8
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        codeTextField.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            codeTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            codeTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
+        ])
+        return stackView
     }()
     
-    lazy var createStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [nameTextField, createButton])
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 8
-        return stack
-    }()
-    
-    lazy var mainStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [joinStack, createStack])
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .vertical
-        stack.spacing = 32
-        return stack
+    lazy var emptyState: GroupEmptyState = {
+        let view = GroupEmptyState()
+        view.descriptionText = "Click on \"Create Group\" to create a new group"
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
     }()
     
 
@@ -84,7 +78,7 @@ class CreateGroupViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        view.backgroundColor = .gray
+        view.backgroundColor = .background
         
         Repository.start()
         setup()
@@ -160,35 +154,38 @@ class CreateGroupViewController: UIViewController {
     }
     
     @objc func handleCreateButton() {
-        let name = nameTextField.text ?? ""
-        nameTextField.text = ""
-        Task {
-            do {
-                let newGroupCode = try await createGroup(groupName: name)
-                print("Group created! Code: \(newGroupCode)")
-
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(
-                        title: "Group Created",
-                        message: "Your group code is: \(newGroupCode)",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alert, animated: true)
-                }
-            } catch {
-                print("Error creating group: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(
-                        title: "Error",
-                        message: "Failed to create group: \(error.localizedDescription)",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alert, animated: true)
-                }
-            }
-        }
+        
+        let modalVC = ModalCreateGroupViewController()
+        modalVC.modalPresentationStyle = .automatic
+        self.present(modalVC, animated: true)
+//        nameTextField.text = ""
+//        Task {
+//            do {
+//                let newGroupCode = try await createGroup(groupName: name)
+//                print("Group created! Code: \(newGroupCode)")
+//
+//                DispatchQueue.main.async {
+//                    let alert = UIAlertController(
+//                        title: "Group Created",
+//                        message: "Your group code is: \(newGroupCode)",
+//                        preferredStyle: .alert
+//                    )
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+//                    self.present(alert, animated: true)
+//                }
+//            } catch {
+//                print("Error creating group: \(error.localizedDescription)")
+//                DispatchQueue.main.async {
+//                    let alert = UIAlertController(
+//                        title: "Error",
+//                        message: "Failed to create group: \(error.localizedDescription)",
+//                        preferredStyle: .alert
+//                    )
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+//                    self.present(alert, animated: true)
+//                }
+//            }
+//        }
     }
     
     // MARK: Functions
@@ -209,15 +206,28 @@ class CreateGroupViewController: UIViewController {
 // MARK: - View Code Protocol
 extension CreateGroupViewController: ViewCodeProtocol {
     func addSubviews() {
-        view.addSubview(mainStack)
+        view.addSubview(topStackView)
+        view.addSubview(textFieldStackView)
+        view.addSubview(emptyState)
     }
     
     func setupConstraints() {
         
         NSLayoutConstraint.activate([
+    
+            topStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 33),
+            topStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 110.25),
+            topStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -110.25),
             
-            mainStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            mainStack.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            textFieldStackView.topAnchor.constraint(equalTo: topStackView.bottomAnchor, constant: 40),
+            textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            
+            emptyState.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor),
+            emptyState.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            emptyState.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            emptyState.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
 }

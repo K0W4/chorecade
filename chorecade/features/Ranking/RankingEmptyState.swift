@@ -1,13 +1,13 @@
 //
-//  EmptyState.swift
+//  RankingEmptyState.swift
 //  chorecade
 //
-//  Created by Carolina Silva dos Santos on 19/06/25.
+//  Created by Carolina Silva dos Santos on 21/06/25.
 //
 
 import UIKit
 
-class EmptyState: UIView {
+class RankingEmptyState: UIView {
         
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
@@ -188,7 +188,7 @@ class EmptyState: UIView {
 
 }
 
-extension EmptyState: ViewCodeProtocol {
+extension RankingEmptyState: ViewCodeProtocol {
     func setup() {
         addSubviews()
         setupConstraints()
@@ -229,3 +229,4 @@ extension EmptyState: ViewCodeProtocol {
     }
 
 }
+
