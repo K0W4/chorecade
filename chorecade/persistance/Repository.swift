@@ -105,23 +105,24 @@ extension Repository {
         return User(nickname: "Default NickName", recordID: recordID)
     }
     
-    // MARK: Creates group model by record
-    private static func createGroupModel(byRecord record: CKRecord) -> Group {
-        let name = record["name"] as? String ?? "Default name"
-        let startDate = record["startDate"] as? Date ?? Date()
-        let duration = record["duration"] as? Int ?? 1
-        let groupCode = record["groupCode"] as? String ?? "Default groupCode"
-        let membersString = record["members"] as? [String] ?? []
-        let prize = record["prize"] as? String ?? "Default prize"
-        let tasksStrig = record["tasks"] as? [String] ?? []
-        
-        var members: [User] = []
-        for memberString in membersString {
-//            if let newMember = createUserModel(byRecordID: memberString) {
-//                
-//            }
-        }
-    }
+//    // MARK: Creates group model by record
+//    private static func createGroupModel(byRecord record: CKRecord) async -> Group {
+//        let name = record["name"] as? String ?? "Default name"
+//        let startDate = record["startDate"] as? Date ?? Date()
+//        let duration = record["duration"] as? Int ?? 1
+//        let groupCode = record["groupCode"] as? String ?? "Default groupCode"
+//        let membersString = record["members"] as? [String] ?? []
+//        let prize = record["prize"] as? String ?? "Default prize"
+//        let tasksStrig = record["tasks"] as? [String] ?? []
+//        
+//        var members: [User] = []
+//        for memberString in membersString {
+//            let recordID = CKRecord.ID(recordName: memberString)
+//            let user = await createUserModel(byRecordID: recordID)
+//            members.append(user)
+//        }
+//        return Group(name: name, startDate: startDate, duration: duration, groupCode: groupCode, members: members, prize: prize, tasks: tasksStrig)
+//    }
     
     
     // MARK: Add task to group

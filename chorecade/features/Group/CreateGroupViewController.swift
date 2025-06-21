@@ -87,9 +87,41 @@ class CreateGroupViewController: UIViewController {
         view.backgroundColor = .gray
         
         Repository.start()
-        
         setup()
         
+    // Verifica se está logado no iCloud
+        CKContainer.default().accountStatus { status, error in
+            print("Account status:", status.rawValue)
+            DispatchQueue.main.async {
+                if status != .available {
+                    let alert = UIAlertController(
+                        title: "iCloud not available",
+                        message: "You need to be logged in to iCloud to continue.",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
+                        exit(0)
+                    })
+                    self.present(alert, animated: true)
+                    return
+                }
+
+                // Se estiver logado, pede permissão
+                self.requestiCloudPermission { granted in
+                    if !granted {
+                        let alert = UIAlertController(
+                            title: "Permission denied",
+                            message: "You need to allow this app to access your iCloud to continue.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
+                            exit(0)
+                        })
+                        self.present(alert, animated: true)
+                    }
+                }
+            }
+        }
 //        fetchGroupRecord(byCode: "01383B")
     }
     
@@ -154,6 +186,20 @@ class CreateGroupViewController: UIViewController {
                     )
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self.present(alert, animated: true)
+                }
+            }
+        }
+    }
+    
+    // MARK: Functions
+    
+    private func requestiCloudPermission(completion: @escaping (Bool) -> Void) {
+        CKContainer.default().requestApplicationPermission([.userDiscoverability]) { status, error in
+            DispatchQueue.main.async {
+                if status == .granted {
+                    completion(true)
+                } else {
+                    completion(false)
                 }
             }
         }

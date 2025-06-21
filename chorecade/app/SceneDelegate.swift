@@ -14,7 +14,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         
         // MARK: - iCloud login verification
-        window.rootViewController = TaskListViewController()
+        window.rootViewController = CreateGroupViewController()
         
         self.window = window
         window.makeKeyAndVisible()
