@@ -8,38 +8,62 @@
 import UIKit
 
 class TaskListView: UIView {
+    
+    // MARK: Variables
+    
+    var currentSelectedGroup: Group?
+    
+    
     // MARK: - Components
+    
     lazy var avatarUIImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         return imageView
     }()
-
-    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap))
-
     
-    lazy var groupSelector = GroupSelector()
-        
+    lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap))
+    
+    lazy var groupSelector: GroupSelector = {
+        let groupSelector = GroupSelector()
+        groupSelector.onGroupSelected = { [weak self] selectedGroup in
+            guard let self = self else { return } // Ensure self is still around
+            
+            // Update the stored currentSelectedGroup
+            self.currentSelectedGroup = selectedGroup
+            print("DEBUG: Group selector notified new group: \(selectedGroup.name)")
+            
+            // Fetch tasks for the newly selected group and reload
+            self.tasksByGroup = Persistence.getTasks(for: selectedGroup.id)
+            print("DEBUG: Fetched \(self.tasksByGroup.count) tasks for \(selectedGroup.name)")
+            self.tasksTableView.reloadData()
+        }
+        return groupSelector
+    }()
+    
+    
     lazy var tasksTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(TaskListTableViewCell.self, forCellReuseIdentifier: "taskList-cell")
+        tableView.register(EmptyTableViewCell.self, forCellReuseIdentifier: "empty-list-cell")
         tableView.dataSource = self
         tableView.delegate = self
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
+        tableView.isScrollEnabled = false
+        tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
+        
         return tableView
     }()
     
     lazy var tasksStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [groupSelector, tasksTableView])
+        let stackView = UIStackView(arrangedSubviews:  [groupSelector, tasksTableView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.spacing = 16
         return stackView
     }()
-    
-    lazy var emptyStateLabel = Components.getLabel(content: "Click on “add a new task” to add a new task", font: Fonts.nameTasksCategories, textColor: .systemGray2)
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -57,30 +81,66 @@ class TaskListView: UIView {
     var onAddTaskButtonTaped: (() -> Void)?
     
     // MARK: - Mocks
-    private let mockTitles: [String] = ["Clean litter box / pick up poop", "Brush pet’s fur", "Full house cleaning"]
-    private let mockDescriptions: [String] = ["Collected and Cleaned the floor", "I brushed Joaquim", "Cleaned all places in the house"]
-    private let mockUsers: [String] = ["Julian", "Bibi18", "JujuJBah"]
+    
+    var tasksByGroup: [Task] = []
+    
     
     // MARK: - Functions
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .background
         setup()
+        
+      
+        
+        // Initialize currentSelectedGroup from groupSelector
+        self.currentSelectedGroup = groupSelector.selectedGroup
+        self.tasksByGroup = Persistence.getTasks(for: currentSelectedGroup?.id ?? UUID())
+        
+        // Update currentSelectedGroup when group changes
+//        groupSelector.onGroupSelected = { [weak self] selected in
+//            print("Tasks for selected group: \(selected.tasks)")
+//            self?.currentSelectedGroup = selected // Update the currentSelectedGroup
+//            self?.tasksByGroup = Persistence.getTasks(for: selected.id) // Fetch tasks for the new group
+//            self?.tasksTableView.reloadData()
+//        }
+        
+        
     }
-     
+    
+    
     required init?(coder: NSCoder) {
         fatalError("not implemented")
     }
     
-    var action: () -> Void = {}
-    
     @objc func handleTap() {
-        action()
+        onAddTaskButtonTaped?()
+    }
+    
+    // funcao para definir o tamanho da tableView
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "contentSize" {
+            tasksTableView.constraints.forEach { constraint in
+                if constraint.firstAttribute == .height {
+                    tasksTableView.removeConstraint(constraint)
+                }
+            }
+            
+            let heightConstraint = tasksTableView.heightAnchor.constraint(equalToConstant: tasksTableView.contentSize.height)
+            heightConstraint.isActive = true
+            layoutIfNeeded()
+        }
+    }
+    
+    deinit {
+        tasksTableView.removeObserver(self, forKeyPath: "contentSize")
     }
 }
 
 // MARK: - Extensions
 extension TaskListView: ViewCodeProtocol {
+    
     func addSubviews() {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
@@ -94,58 +154,38 @@ extension TaskListView: ViewCodeProtocol {
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
+            
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-
+            
             addNewTaskButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 320),
             addNewTaskButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             addNewTaskButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            tasksTableView.heightAnchor.constraint(equalToConstant: CGFloat(3 * 136 + 32)),
-            
             tasksStack.topAnchor.constraint(equalTo: addNewTaskButton.bottomAnchor, constant: 24),
             tasksStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             tasksStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            tasksStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -32)
+            tasksStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -32),
+            
+            
         ])
     }
 }
 
-extension TaskListView: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        3
-    }
+extension TaskListView: AddNewTaskModalDelegate {
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "taskList-cell", for: indexPath) as? TaskListTableViewCell else {
-            return UITableViewCell()
+    func didAddTask(task: Task) {
+        if let selectedGroupId = self.currentSelectedGroup?.id {
+            self.tasksByGroup = Persistence.getTasks(for: selectedGroupId)
+            print("DEBUG: Task added. Reloading tasks for group ID: \(selectedGroupId). New count: \(self.tasksByGroup.count)")
+            self.tasksTableView.reloadData()
+        } else {
+            print("DEBUG: No group selected in TaskListView, cannot refresh after adding task.")
         }
         
-        let title = mockTitles[indexPath.row]
-        let description = mockDescriptions[indexPath.row]
-        let user = mockUsers[indexPath.row]
-        
-        cell.taskTitleLabel.text = title
-        cell.taskDescriptionLabel.text = description
-        cell.taskPointsLabel.text = "+10 points"
-        cell.nameUserLabel.text = user
-        
-        return cell
     }
     
-//    func numberOfSections(in tableView: UITableView) -> Int {
-//        emptyView.isHidden = !sections.isEmpty
-//        tableView.isHidden = sections.isEmpty
-//        return sections.count
-//    }
-}
-
-extension TaskListView: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 136
-    }
 }

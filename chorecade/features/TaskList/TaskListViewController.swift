@@ -12,7 +12,7 @@ class TaskListViewController: UIViewController {
     private lazy var taskListView: TaskListView = {
         let view = TaskListView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.action = handleTap
+        view.onAddTaskButtonTaped = handleTap
         return view
     }()
     
@@ -23,11 +23,14 @@ class TaskListViewController: UIViewController {
         setup()
     }
     
+    
     func handleTap() {
         let modalViewController = AddNewTaskModalViewController()
         
         modalViewController.modalPresentationStyle = .pageSheet
-
+        modalViewController.delegate = taskListView
+        modalViewController.selectedGroup = taskListView.currentSelectedGroup
+        
         if let sheet = modalViewController.sheetPresentationController {
             sheet.prefersGrabberVisible = true
         }

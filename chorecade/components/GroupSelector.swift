@@ -8,80 +8,151 @@
 import UIKit
 
 class GroupSelector: UIView {
+    
+    var onGroupSelected: ((Group) -> Void)?
+    
     // MARK: Components
-    lazy var label: UILabel = {
-        let label = UILabel()
-        label.text = "Current Name"
-        label.font = Fonts.nameOnTasks
-        return label
-    }()
-    
     lazy var button: UIButton = {
-        var buton = UIButton()
+        let button = UIButton()
+        button.menu = UIMenu(title: "Groups", options: [.singleSelection], children: groupSelections)
+        button.showsMenuAsPrimaryAction = true
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
         var config = UIButton.Configuration.plain()
-        config.title = selectedGroup ?? "Select"
-        config.indicator = .popup
-        buton.configuration = config
-        buton.menu = UIMenu(title: "Category", options: [.singleSelection], children: groupSelections)
-        buton.showsMenuAsPrimaryAction = true
-        return buton
-    }()
-    
-    // MARK: Stack
-    private lazy var stack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [label, button])
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = 8
-        stack.isLayoutMarginsRelativeArrangement = true
-        stack.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
-        stack.backgroundColor = UIColor(named: "Background-Tertiary")
-        stack.layer.cornerRadius = 8
-        return stack
-    }()
-    
-    // MARK: Data
-    private let mockTitles: [String] = ["Clean litter box / pick up poop", "Brush pet’s fur", "Full house cleaning"]
+        let indicator = UIImage(systemName: "chevron.down")?.withRenderingMode(.alwaysTemplate)
+        
+        let indicatorConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .bold)
+        let tintedIndicator = indicator?.applyingSymbolConfiguration(indicatorConfig)?.withTintColor(.black, renderingMode: .alwaysOriginal)
+        
+        config.image = tintedIndicator
+        config.imagePlacement = .trailing
+        config.imagePadding = 8
+        
+        let titleText = selectedGroup?.name ?? mockGroups.first?.name ?? "Select"
 
+        let attributedTitle = AttributedString(
+            titleText,
+            attributes: AttributeContainer([
+                .font: Fonts.nameOnTasks,
+                .foregroundColor: UIColor.black,
+            ])
+        )
+        config.attributedTitle = attributedTitle
+        
+        button.configuration = config
+        return button
+    }()
+    
+    
+    // MARK: Data -- ajustar para buscar os grupos por user
+    
+    var availableGroups: [Group] {
+            return Persistence.getGroups()?.groups ?? []
+        }
+    
+    var mockGroups: [Group] {
+        return Persistence.getGroups()?.groups ?? []
+    }
     
     private var groupSelections: [UIAction] {
-        mockTitles.map { title in
-            UIAction(title: title) { [weak self] _ in
-                self?.selectedGroup = title
+            availableGroups.map { group in
+                let action = UIAction(title: group.name) { [weak self] _ in
+                    self?.selectedGroup = group
+                }
+                
+                // Apply custom styling to the menu items
+                let attributed = NSAttributedString(
+                    string: group.name,
+                    attributes: [
+                        .foregroundColor: UIColor.primaryPurple300 // Assuming this is defined
+                    ]
+                )
+                action.setValue(attributed, forKey: "attributedTitle")
+                
+                action.state = (group.id == selectedGroup?.id) ? .on : .off
+                
+                return action
             }
         }
-    }
-    
-    var selectedGroup: String? {
-        didSet {
-            var config = button.configuration
-            config?.title = selectedGroup ?? "Select"
-            button.configuration = config
+
+    var selectedGroup: Group? {
+            didSet {
+                // Update the button's title when the selectedGroup changes
+                updateButtonConfiguration()
+                // If the group truly changed, notify the delegate
+                if let group = selectedGroup, group.id != oldValue?.id {
+                    onGroupSelected?(group)
+                }
+            }
         }
-    }
     
     // MARK: Functions
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         setup()
+        
+        if let lastSelectedGroupId = UserDefaults.standard.string(forKey: "lastSelectedGroupId"),
+                   let uuid = UUID(uuidString: lastSelectedGroupId),
+                   let savedGroup = availableGroups.first(where: { $0.id == uuid }) {
+                    self.selectedGroup = savedGroup
+                } else {
+                    self.selectedGroup = availableGroups.first // Default to the first group if no preference
+                }
+                
+                // Now that selectedGroup is set, configure the button's menu and initial title
+                updateButtonConfiguration()
+                
+                // Trigger the initial onGroupSelected event, so TaskListView gets the current group
+                if let initialGroup = selectedGroup {
+                    onGroupSelected?(initialGroup)
+                }
+        
     }
+    
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    
+    private func updateButtonConfiguration() {
+            var config = UIButton.Configuration.plain()
+            let indicator = UIImage(systemName: "chevron.down")?.withRenderingMode(.alwaysTemplate)
+            
+            let indicatorConfig = UIImage.SymbolConfiguration(pointSize: 12, weight: .bold)
+            let tintedIndicator = indicator?.applyingSymbolConfiguration(indicatorConfig)?.withTintColor(.black, renderingMode: .alwaysOriginal)
+            
+            config.image = tintedIndicator
+            config.imagePlacement = .trailing
+            config.imagePadding = 8
+            
+            let titleText = selectedGroup?.name ?? "Select Group" // Fallback text
+            
+            let attributedTitle = AttributedString(
+                titleText,
+                attributes: AttributeContainer([
+                    .font: Fonts.nameOnTasks, // Assuming Fonts.nameOnTasks is defined
+                    .foregroundColor: UIColor.black,
+                ])
+            )
+            config.attributedTitle = attributedTitle
+            
+            button.configuration = config
+            
+            // Update the button's menu (important for marking selected item)
+            button.menu = UIMenu(title: "Groups", options: [.singleSelection], children: groupSelections)
+        }
 }
 
 // MARK: Extensions
 extension GroupSelector: ViewCodeProtocol {
     func addSubviews() {
-        addSubview(stack)
+        addSubview(button)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: topAnchor),
-            stack.bottomAnchor.constraint(equalTo: bottomAnchor),
-            stack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor),
-            stack.heightAnchor.constraint(equalToConstant: 44),
+            button.topAnchor.constraint(equalTo: topAnchor),
+            button.bottomAnchor.constraint(equalTo: bottomAnchor),
+            button.leadingAnchor.constraint(equalTo: leadingAnchor),
+            button.heightAnchor.constraint(equalToConstant: 44),
         ])
     }
 }

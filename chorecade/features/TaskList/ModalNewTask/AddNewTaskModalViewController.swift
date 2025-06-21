@@ -7,12 +7,18 @@
 
 import UIKit
 
+protocol AddNewTaskModalDelegate: AnyObject {
+    func didAddTask(task: Task)
+}
+
 class AddNewTaskModalViewController: UIViewController {
     
     // MARK: Variables
     
     var activePhotoComponent: PhotoComponent?
     var selectedCategory: Category?
+    var selectedGroup: Group?
+    weak var delegate: AddNewTaskModalDelegate?
     
     // MARK: Views
     
@@ -73,14 +79,15 @@ class AddNewTaskModalViewController: UIViewController {
         categoryComponent.isHidden = true
         return categoryComponent
     }()
-        
+    
     lazy var descriptionLabel = Components.getLabel(
         content: "Add Description",
         font: Fonts.descriptionLabel
     )
     
     lazy var descriptionTextField = Components.getTextField(
-        placeholder: "Ex: Cleaned the airfryer too"
+        placeholder: "Ex: Cleaned the airfryer too",
+        delegate: self
     )
     
     lazy var descriptionStackView: UIStackView = {
@@ -116,8 +123,8 @@ class AddNewTaskModalViewController: UIViewController {
         addAfterPhoto.onPhotoRequest = { [weak self] in
             self?.activePhotoComponent = self?.addAfterPhoto
         }
+        
     }
-
     
     
     // MARK: Functions
@@ -135,7 +142,7 @@ class AddNewTaskModalViewController: UIViewController {
             self?.categorySelectionView.selected = true
             self?.categorySelectionView.isHidden = false
         }
-
+        
         
         if let sheet = modalViewController.sheetPresentationController {
             sheet.prefersGrabberVisible = true
@@ -146,31 +153,64 @@ class AddNewTaskModalViewController: UIViewController {
     
     @objc func addButtonTapped() {
         
-        
-        guard let beforeImage = addBeforePhoto.selectedImage else {
-            print("You must select at least the 'before' photo.")
+        guard let group = selectedGroup else {
+            let termsAlert = UIAlertController(
+                title: "Error!",
+                message: "No group selected for this task.",
+                preferredStyle: .alert
+            )
+            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(termsAlert, animated: true, completion: nil)
             return
         }
-
-        print("BEFORE photo: selected \(beforeImage)")
-
-        if let afterImage = addAfterPhoto.selectedImage {
-            print("AFTER photo: selected")
-        } else {
-            print("AFTER photo: not selected")
-        }
-
-        if let category = selectedCategory {
-            print("Category selected: \(category.title), Points: \(category.points), Level: \(category.nivel)")
-        } else {
-            print("No category selected")
-        }
-
-        let descriptionText = descriptionTextField.text ?? ""
-        print("Description: \(descriptionText)")
         
-    
-        //        dismiss(animated: true)
+        guard let beforeImage = addBeforePhoto.selectedImage else {
+            let termsAlert = UIAlertController(
+                title: "Warning!",
+                message: "Add a photo before you start cleaning",
+                preferredStyle: .alert
+            )
+            
+            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(termsAlert, animated: true, completion: nil)
+            
+            return
+        }
+        
+        let afterImage = addAfterPhoto.selectedImage
+        
+        guard let category = selectedCategory else {
+            let termsAlert = UIAlertController(
+                title: "Warning!",
+                message: "Select a category",
+                preferredStyle: .alert
+            )
+            
+            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(termsAlert, animated: true, completion: nil)
+            
+            return
+        }
+        
+        let descriptionText = descriptionTextField.text ?? ""
+        
+        let newTask = Task(
+            id: UUID(),
+            category: category,
+            description: descriptionText,
+            user: Persistence.getGroups()?.groups[0].users[0] ?? User(nickname: "julia") ,
+            group: group,
+            beforePic: beforeImage,
+            afterPic: afterImage,
+        )
+        
+        Persistence.addTask(newTask: newTask)
+        
+        delegate?.didAddTask(task: newTask)
+        
+        dismiss(animated: true, completion: nil)
+        
+       
     }
     
 }
@@ -208,5 +248,18 @@ extension AddNewTaskModalViewController: UIImagePickerControllerDelegate, UINavi
         guard let image = info[.originalImage] as? UIImage else { return }
         
         activePhotoComponent?.selectedImage = image
+    }
+}
+
+
+extension AddNewTaskModalViewController: UITextFieldDelegate {
+    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+        if textField == descriptionTextField {
+            let currentText = textField.text ?? ""
+            guard let stringRange = Range(range, in: currentText) else { return false }
+            let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+            return updatedText.count <= 42
+        }
+        return true
     }
 }
