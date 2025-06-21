@@ -16,11 +16,11 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if section == 0 {
-            return categories.filter { $0.nivel == 1 }.count
+            return categories.filter { $0.level == 1 }.count
         } else if section == 1 {
-            return categories.filter { $0.nivel == 2 }.count
+            return categories.filter { $0.level == 2 }.count
         }
-        return categories.filter { $0.nivel == 3 }.count
+        return categories.filter { $0.level == 3 }.count
         
     }
     
@@ -58,19 +58,19 @@ extension ChooseCategoryViewController: UICollectionViewDataSource {
         }
         
         if indexPath.section == 0 {
-            let category = categories.filter { $0.nivel == 1 }[indexPath.item]
+            let category = categories.filter { $0.level == 1 }[indexPath.item]
             cell.configure(
                 title: category.title,
                 points: category.points,
             )
         } else if indexPath.section == 1 {
-            let category = categories.filter { $0.nivel == 2 }[indexPath.item]
+            let category = categories.filter { $0.level == 2 }[indexPath.item]
             cell.configure(
                 title: category.title,
                 points: category.points,
             )
         } else {
-            let category = categories.filter { $0.nivel == 3 }[indexPath.item]
+            let category = categories.filter { $0.level == 3 }[indexPath.item]
             cell.configure(
                 title: category.title,
                 points: category.points,

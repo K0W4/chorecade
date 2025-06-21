@@ -8,10 +8,14 @@
 import UIKit
 
 class TaskListTableViewCell: UITableViewCell {
+    
     // MARK: Reuse ID
     static let reuseIdentifier = "taskList-cell"
     
     // MARK: - Components
+    
+    // Task
+    
     lazy var taskTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask)
     
     lazy var taskDescriptionLabel = Components.getLabel(content: "", font: Fonts.descriptionTask)
@@ -20,7 +24,7 @@ class TaskListTableViewCell: UITableViewCell {
         let stackView = UIStackView(arrangedSubviews: [taskTitleLabel, taskDescriptionLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-//        stackView.alignment = .top
+        stackView.distribution = .equalCentering
         return stackView
     }()
     
@@ -35,15 +39,19 @@ class TaskListTableViewCell: UITableViewCell {
         imageView.clipsToBounds = true
         return imageView
     }()
+    
+    // Top Stack
 
-    lazy var taskItensStack: UIStackView = {
+    lazy var topStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [taskImage, taskLabelsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
         stackView.spacing = 8
-        stackView.alignment = .leading
+        stackView.alignment = .center
         return stackView
     }()
+    
+    // Points
     
     lazy var taskPointsLabel = Components.getLabel(content: "", font: Fonts.points, alignment: .center)
     
@@ -53,11 +61,13 @@ class TaskListTableViewCell: UITableViewCell {
         stackView.backgroundColor = .yellowPoints
         stackView.alignment = .center
         stackView.distribution = .equalSpacing
-        stackView.layer.cornerRadius = 16
+        stackView.layer.cornerRadius = 12
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
         return stackView
     }()
+    
+    // User info
     
     lazy var nameUserLabel = Components.getLabel(content: "", font: Fonts.taskDetails, textColor: .systemGray2, alignment: .right)
     
@@ -82,19 +92,23 @@ class TaskListTableViewCell: UITableViewCell {
         return stackView
     }()
     
-    lazy var userStack: UIStackView = {
+    // Bottom Stack
+    
+    lazy var bottomStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [taskPointsStack, userInfosStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
-        stackView.spacing = 136
+        stackView.distribution = .equalSpacing
         return stackView
     }()
     
+    // Cell Stack
+    
     lazy var cellStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [taskItensStack, userStack])
+        let stackView = UIStackView(arrangedSubviews: [topStack, bottomStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.spacing = 8
+        stackView.spacing = 16
         stackView.backgroundColor = UIColor.primaryPurple100
         stackView.layer.borderWidth = 1
         stackView.layer.borderColor = UIColor.primaryPurple300.cgColor
@@ -110,6 +124,12 @@ class TaskListTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         backgroundColor = .clear
         setup()
+        
+        taskTitleLabel.numberOfLines = 2
+        taskTitleLabel.lineBreakMode = .byWordWrapping
+//        
+//        taskDescriptionLabel.numberOfLines = 2
+//        taskDescriptionLabel.lineBreakMode = .byWordWrapping
     }
 
     required init?(coder: NSCoder) {
@@ -130,7 +150,10 @@ extension TaskListTableViewCell: ViewCodeProtocol {
             cellStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             
             taskPointsStack.heightAnchor.constraint(equalToConstant: 26),
+            
             taskImage.widthAnchor.constraint(equalToConstant: 45),
+            taskImage.heightAnchor.constraint(equalToConstant: 45),
+            
             iconUserImage.widthAnchor.constraint(equalToConstant: 28),
         ])
     }

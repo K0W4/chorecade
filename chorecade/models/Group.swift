@@ -6,8 +6,8 @@
 //
 import Foundation
 
-class Group {
-    let id: UUID = UUID()
+struct Group: Codable {
+    let id: UUID
     
     var name: String
     
@@ -24,10 +24,4 @@ class Group {
     
     var tasks: [Task] = []
     
-    init(name: String, startDate: Date, duration: TimeInterval, prize: String) {
-        self.name = name
-        self.startDate = startDate
-        self.duration = duration
-        self.prize = prize
-    }
 }
