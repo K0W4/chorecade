@@ -5,9 +5,12 @@
 //  Created by João Pedro Teixeira de Carvalho on 10/06/25.
 //
 import Foundation
+import UIKit
 
 class Group {
     var name: String
+    
+    var groupImage: UIImage? = nil
     
     var startDate: Date
     var duration: Int

@@ -235,54 +235,7 @@ extension CreateGroupViewController: ViewCodeProtocol {
 // MARK: - CloudKit related functions
 extension CreateGroupViewController {
     
-    
-    // MARK: Create group
-    func createGroup(groupName: String) async throws -> String {
-        let publicDB = CKContainer.default().publicCloudDatabase
-        let groupCode = String(UUID().uuidString.prefix(6)).uppercased()
-
-        let userRecordID: CKRecord.ID = try await withCheckedThrowingContinuation { continuation in
-            CKContainer.default().fetchUserRecordID { userRecordID, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else if let userRecordID = userRecordID {
-                    continuation.resume(returning: userRecordID)
-                } else {
-                    continuation.resume(throwing: NSError(domain: "CloudKit", code: 0, userInfo: [NSLocalizedDescriptionKey: "No user record ID found."]))
-                }
-            }
-        }
-
-        let userIDString = userRecordID.recordName
-
-        let groupRecord = CKRecord(recordType: "Group")
-        groupRecord["name"] = groupName as NSString
-        groupRecord["startDate"] = Date() as NSDate
-        groupRecord["duration"] = 1 as NSNumber
-        groupRecord["groupCode"] = groupCode as NSString
-        groupRecord["members"] = [userIDString] as NSArray
-        groupRecord["prize"] = "Default Prize" as NSString
-        groupRecord["tasks"] = [String]() as NSArray
-
-        // Step: Update user's groupCode
-        addGroupCodeTo(user: userIDString, code: groupCode)
-
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            publicDB.save(groupRecord) { savedRecord, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                } else if savedRecord != nil {
-                    continuation.resume(returning: ())
-                } else {
-                    continuation.resume(throwing: NSError(domain: "CloudKit", code: 0, userInfo: [NSLocalizedDescriptionKey: "Unknown error saving group."]))
-                }
-            }
-        }
-
-        return groupCode
-    }
-    
-    func addGroupCodeTo(user: String, code: String) {
+    static func addGroupCodeTo(user: String, code: String) {
             let publicDB = CKContainer.default().publicCloudDatabase
             
             CKContainer.default().publicCloudDatabase.fetch(withRecordID: CKRecord.ID(recordName: user)) { record, error in
