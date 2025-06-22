@@ -13,7 +13,7 @@ class ModalCreateGroupViewController: UIViewController {
     var activePhotoComponent: PhotoComponent?
     
     // MARK: Components
-    lazy var headerView: ModalHeader = {
+    private lazy var headerView: ModalHeader = {
         var header = ModalHeader()
         header.translatesAutoresizingMaskIntoConstraints = false
         header.title = "Create Group"
@@ -27,7 +27,7 @@ class ModalCreateGroupViewController: UIViewController {
         return header
     }()
     
-    lazy var addGroupPhoto: PhotoComponent = {
+    private lazy var addGroupPhoto: PhotoComponent = {
         var photo = PhotoComponent()
         photo.viewController = self
         photo.translatesAutoresizingMaskIntoConstraints = false
@@ -51,7 +51,7 @@ class ModalCreateGroupViewController: UIViewController {
         return textField
     }()
     
-    lazy var nameStackView: UIStackView = {
+    private lazy var nameStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [nameLabel, nameTextField])
         stackView.axis = .vertical
         stackView.alignment = .leading
@@ -83,7 +83,7 @@ class ModalCreateGroupViewController: UIViewController {
         return textField
     }()
     
-    lazy var rewardStackView: UIStackView = {
+    private lazy var rewardStackView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [rewardLabel, rewardTextField])
         stackView.axis = .vertical
         stackView.alignment = .leading
@@ -108,7 +108,7 @@ class ModalCreateGroupViewController: UIViewController {
         return label
     }()
     
-    lazy var colorsImage: UIImageView = {
+    private lazy var colorsImage: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(named: "defaultImage")
@@ -117,7 +117,23 @@ class ModalCreateGroupViewController: UIViewController {
         imageView.layer.borderColor = UIColor.black.cgColor
         imageView.layer.cornerRadius = 13
         imageView.clipsToBounds = true
+        
+        NSLayoutConstraint.activate([
+            imageView.widthAnchor.constraint(equalToConstant: 361),
+            imageView.heightAnchor.constraint(equalToConstant: 58)
+        ])
+        
         return imageView
+    }()
+    
+    private lazy var colorsStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [colorLabel, colorsImage])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .leading
+        stackView.distribution = .fill
+        stackView.spacing = 8
+        return stackView
     }()
     
     private lazy var periodLabel: UILabel = {
@@ -129,6 +145,94 @@ class ModalCreateGroupViewController: UIViewController {
         label.textColor = .black
         return label
     }()
+    
+    private lazy var monthlyButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        button.backgroundColor = .primaryPurple100
+        
+        button.addTarget(self, action: #selector(filterButtonTapped(_:)), for: .touchUpInside)
+        
+        button.titleLabel?.font = UIFont(name: "Jersey10-Regular", size: 20)
+        button.setTitleColor(.black, for: .normal)
+        button.setTitle("Monthly", for: .normal)
+        button.layer.cornerRadius = 13
+
+        return button
+    }()
+    
+    private lazy var weeklyButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        button.backgroundColor = .primaryPurple100
+        
+        button.addTarget(self, action: #selector(filterButtonTapped(_:)), for: .touchUpInside)
+        
+        button.titleLabel?.font = UIFont(name: "Jersey10-Regular", size: 20)
+        button.setTitleColor(.black, for: .normal)
+        button.setTitle("Weekly", for: .normal)
+        button.layer.cornerRadius = 13
+
+        return button
+    }()
+    
+    private lazy var biweeklyButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        
+        button.backgroundColor = .primaryPurple100
+        
+        button.addTarget(self, action: #selector(filterButtonTapped(_:)), for: .touchUpInside)
+        
+        button.titleLabel?.font = UIFont(name: "Jersey10-Regular", size: 20)
+        button.setTitleColor(.black, for: .normal)
+        button.setTitle("Biweekly", for: .normal)
+        button.layer.cornerRadius = 13
+
+        return button
+    }()
+    
+    private var filterButtons: [UIButton] {
+        return [monthlyButton, weeklyButton, biweeklyButton]
+    }
+    
+    @objc func filterButtonTapped(_ sender: UIButton) {
+        for button in filterButtons {
+            button.backgroundColor = .primaryPurple100
+        }
+
+        sender.backgroundColor = .primaryPurple300
+
+        // Aqui você pode aplicar o filtro, se quiser
+    }
+    
+    private lazy var buttonStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [monthlyButton, weeklyButton, biweeklyButton])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 16
+        return stackView
+    }()
+    
+    private lazy var labelButtonStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [periodLabel, buttonStackView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        return stackView
+    }()
+    
+    private lazy var mainStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [nameStackView, rewardStackView, colorsStackView, labelButtonStackView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 40
+        return stackView
+    }()
+    
     
     // MARK: Proprieties
     override func viewDidLoad() {
@@ -155,6 +259,8 @@ class ModalCreateGroupViewController: UIViewController {
 extension ModalCreateGroupViewController: ViewCodeProtocol {
     func addSubviews() {
         view.addSubview(headerView)
+        view.addSubview(addGroupPhoto)
+        view.addSubview(mainStackView)
     }
     
     func setupConstraints() {
@@ -162,10 +268,33 @@ extension ModalCreateGroupViewController: ViewCodeProtocol {
             
             // Header View
             
-            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            headerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
             headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             
+            // Add Group Photo
+            
+            addGroupPhoto.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 24),
+            addGroupPhoto.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 111),
+            addGroupPhoto.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -111),
+            addGroupPhoto.heightAnchor.constraint(equalToConstant: 171),
+            
+            // Main Stack
+            
+            mainStackView.topAnchor.constraint(equalTo: addGroupPhoto.bottomAnchor, constant: 32),
+            mainStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            mainStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
         ])
+    }
+}
+
+extension ModalCreateGroupViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        
+        guard let image = info[.originalImage] as? UIImage else { return }
+        
+        activePhotoComponent?.selectedImage = image
     }
 }
