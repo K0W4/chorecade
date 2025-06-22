@@ -114,7 +114,7 @@ extension Repository {
 //        let membersString = record["members"] as? [String] ?? []
 //        let prize = record["prize"] as? String ?? "Default prize"
 //        let tasksStrig = record["tasks"] as? [String] ?? []
-//        
+//
 //        var members: [User] = []
 //        for memberString in membersString {
 //            let recordID = CKRecord.ID(recordName: memberString)
@@ -123,6 +123,48 @@ extension Repository {
 //        }
 //        return Group(name: name, startDate: startDate, duration: duration, groupCode: groupCode, members: members, prize: prize, tasks: tasksStrig)
 //    }
+    
+    // MARK: Fetches every user in a group
+    static func fetchUsersForGroup(groupRecordID: CKRecord.ID, completion: @escaping ([CKRecord]) -> Void) {
+        let predicate = NSPredicate(format: "groupReference == %@", groupRecordID)
+        let query = CKQuery(recordType: "User", predicate: predicate)
+        
+        CKContainer.default().publicCloudDatabase.perform(query, inZoneWith: nil) { records, error in
+            DispatchQueue.main.async {
+                if let records = records {
+                    completion(records)
+                } else {
+                    print("Erro ao buscar usuários: \(error?.localizedDescription ?? "Desconhecido")")
+                    completion([])
+                }
+            }
+        }
+    }
+    
+    // MARK: Fetches every group a user is in
+    static func fetchGroupsForUser(userID: String, completion: @escaping ([CKRecord]) -> Void) {
+        let predicate = NSPredicate(format: "ANY members == %@", userID)
+        let query = CKQuery(recordType: "Group", predicate: predicate)
+        CKContainer.default().publicCloudDatabase.perform(query, inZoneWith: nil) { records, error in
+            DispatchQueue.main.async {
+                if let records = records {
+                    completion(records)
+                } else {
+                    print("Erro ao buscar grupos: \(error?.localizedDescription ?? "Desconhecido")")
+                    completion([])
+                }
+            }
+        }
+    }
+    
+    // MARK: Gets user profile image
+    static func getUserImage(from record: CKRecord) -> UIImage? {
+        if let asset = record["profileImage"] as? CKAsset,
+           let data = try? Data(contentsOf: asset.fileURL!) {
+            return UIImage(data: data)
+        }
+        return UIImage(named: "defaultImage")
+    }
     
     
     // MARK: Add task to group

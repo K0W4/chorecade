@@ -10,7 +10,9 @@ import UIKit
 
 class CreateGroupViewController: UIViewController {
     
-    var userGroups: [CKRecord] = []
+    // MARK: Variables
+    var usersByGroup: [[CKRecord]] = []
+    var groupNames: [String] = []
     
     // MARK: - Components
     private lazy var groupLabel: UILabel = {
@@ -73,6 +75,20 @@ class CreateGroupViewController: UIViewController {
         return view
     }()
     
+    lazy var groupsTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(GroupsTableViewCell.self, forCellReuseIdentifier: "GroupsTableViewCell")
+        tableView.dataSource = self
+        tableView.delegate = self
+        tableView.backgroundColor = .clear
+        tableView.separatorStyle = .none
+        tableView.isScrollEnabled = false
+        tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
+        
+        return tableView
+    }()
+    
 
     // MARK: - Scene
     override func viewDidLoad() {
@@ -116,42 +132,45 @@ class CreateGroupViewController: UIViewController {
                 }
             }
         }
+        
+        loadGroupsAndUsersForCurrentUser()
+        
 //        fetchGroupRecord(byCode: "01383B")
     }
     
     
     // MARK: - Button functions
-    @objc func handleJoinButton() {
-        let code = codeTextField.text ?? ""
-        codeTextField.text = ""
-        Task {
-            do {
-                let updatedGroup = try await joinGroupAndSaveUser(withCode: code)
-                print("Joined group! Group name: \(updatedGroup["name"] ?? "")")
-                
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(
-                        title: "Joined Group",
-                        message: "You successfully joined: \(updatedGroup["name"] ?? "")",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alert, animated: true)
-                }
-            } catch {
-                print("Failed to join group: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(
-                        title: "Error",
-                        message: "Could not join group: \(error.localizedDescription)",
-                        preferredStyle: .alert
-                    )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-                    self.present(alert, animated: true)
-                }
-            }
-        }
-    }
+//    @objc func handleJoinButton() {
+//        let code = codeTextField.text ?? ""
+//        codeTextField.text = ""
+//        Task {
+//            do {
+//                let updatedGroup = try await joinGroupAndSaveUser(withCode: code)
+//                print("Joined group! Group name: \(updatedGroup["name"] ?? "")")
+//
+//                DispatchQueue.main.async {
+//                    let alert = UIAlertController(
+//                        title: "Joined Group",
+//                        message: "You successfully joined: \(updatedGroup["name"] ?? "")",
+//                        preferredStyle: .alert
+//                    )
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+//                    self.present(alert, animated: true)
+//                }
+//            } catch {
+//                print("Failed to join group: \(error.localizedDescription)")
+//                DispatchQueue.main.async {
+//                    let alert = UIAlertController(
+//                        title: "Error",
+//                        message: "Could not join group: \(error.localizedDescription)",
+//                        preferredStyle: .alert
+//                    )
+//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+//                    self.present(alert, animated: true)
+//                }
+//            }
+//        }
+//    }
     
     @objc func handleCreateButton() {
         
@@ -201,6 +220,29 @@ class CreateGroupViewController: UIViewController {
             }
         }
     }
+    
+    private func loadGroupsAndUsersForCurrentUser() {
+        guard let currentUserID = Repository.userRecordID?.recordName else { return }
+
+        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
+            self?.groupNames = groups.compactMap { $0["name"] as? String }
+            self?.usersByGroup = Array(repeating: [], count: groups.count)
+            let total = groups.count
+            var fetched = 0
+
+            for (i, group) in groups.enumerated() {
+                Repository.fetchUsersForGroup(groupRecordID: group.recordID) { users in
+                    self?.usersByGroup[i] = users
+                    fetched += 1
+                    if fetched == total {
+                        DispatchQueue.main.async {
+                            self?.groupsTableView.reloadData()
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // MARK: - View Code Protocol
@@ -208,7 +250,13 @@ extension CreateGroupViewController: ViewCodeProtocol {
     func addSubviews() {
         view.addSubview(topStackView)
         view.addSubview(textFieldStackView)
-        view.addSubview(emptyState)
+        
+        if groupNames.isEmpty {
+            view.addSubview(emptyState)
+        } else {
+            view.addSubview(groupsTableView)
+        }
+        
     }
     
     func setupConstraints() {
@@ -343,3 +391,29 @@ extension CreateGroupViewController {
         return savedGroup
     }
 }
+
+extension CreateGroupViewController: UITableViewDataSource {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return groupNames.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupsTableViewCell", for: indexPath) as? GroupsTableViewCell else {
+            return UITableViewCell()
+        }
+        let users = usersByGroup[indexPath.row]
+            let groupName = groupNames[indexPath.row]
+            cell.configure(with: users)
+            cell.groupTitleLabel.text = groupName
+//            cell.groupLabel.text = groupRecord["name"] as? String
+            return cell
+        
+        
+        return cell
+    }
+}
+
+extension CreateGroupViewController: UITableViewDelegate {
+    // Implemente os métodos desejados aqui
+}
+
