@@ -11,9 +11,7 @@ import CloudKit
 class GroupSelector: UIView {
     
     var onGroupSelected: ((Group) -> Void)?
-    var groupRecords: [CKRecord] = [] {
-      
-    }
+    var groupRecords: [CKRecord] = [] 
     
     // MARK: Components
     lazy var button: UIButton = {
