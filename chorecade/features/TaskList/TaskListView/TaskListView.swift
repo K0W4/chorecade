@@ -13,7 +13,6 @@ class TaskListView: UIView {
     
     var currentSelectedGroup: Group?
     
-    
     // MARK: - Components
     
     lazy var avatarUIImageView: UIImageView = {
@@ -95,11 +94,12 @@ class TaskListView: UIView {
         self.currentSelectedGroup = groupSelector.selectedGroup
         self.tasksByGroup = Repository.getTasksForCurrentGroup()
         
-        // Update currentSelectedGroup when group changes
+//         Update currentSelectedGroup when group changes
 //        groupSelector.onGroupSelected = { [weak self] selected in
-//            print("Tasks for selected group: \(selected.tasks)")
-//            self?.currentSelectedGroup = selected // Update the currentSelectedGroup
-//            self?.tasksByGroup = Persistence.getTasks(for: selected.id) // Fetch tasks for the new group
+//            self?.currentSelectedGroup = selected
+//            self?.tasksByGroup = Repository.getTasksForCurrentGroup(selectedGroup: selected)
+//            
+//            Persistence.getTasks(for: selected.id)
 //            self?.tasksTableView.reloadData()
 //        }
         

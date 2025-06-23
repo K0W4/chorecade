@@ -17,7 +17,7 @@ struct Repository {
     
     static func start() {
         Task {
-            guard let id = await fetchiCloudUserRecordID() else {
+            guard let id = await fetchiCloudUserRecordID() else { 
                 print("Couldn't fetch iCloud user record ID")
                 return
             }
