@@ -9,55 +9,75 @@ import UIKit
 
 class TaskDetailsViewController: UIViewController {
     // MARK: - Components
-    lazy var scrollView = UIScrollView()
+    lazy var imagesScrollView: UIScrollView = {
+       let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.delegate = self
+        return scrollView
+    }()
     
-    lazy var pageControl: UIPageControl = {
+    lazy var imagesPageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
         pageControl.numberOfPages = 2
-        pageControl.backgroundColor = .primaryPurple300
+        pageControl.backgroundStyle = .minimal
+        pageControl.currentPageIndicatorTintColor = .black
+        pageControl.pageIndicatorTintColor = .gray
+        pageControl.layer.cornerRadius = 12
         return pageControl
     }()
     
-    // MARK: - View
-    lazy var taskDetailsView: TaskDetailsView = {
-        let view = TaskDetailsView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
+    lazy var taskTitleLabel = Components.getLabel(content: "Default Task", font: Fonts.titleConcludedTask, alignment: .center)
+    
+    lazy var authorImageView = UIImageView()
+    
+    lazy var authorNameLabel = Components.getLabel(content: "Julian", font: Fonts.titleConcludedTask)
+    
+    lazy var dateLabel = Components.getLabel(content: "10 June 2025 at 09:41", font: Fonts.descriptionTask)
+    
+    lazy var detailsStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [authorNameLabel, dateLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.spacing = 8
+        return stackView
+    }()
+
+    lazy var authorStack: UIStackView = {
+       let stackView = UIStackView(arrangedSubviews: [authorImageView, detailsStack])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.spacing = 8
+        return stackView
     }()
     
     // MARK: - Functions
     override func viewDidLoad() {
         super.viewDidLoad()
-        pageControl.addTarget(self, action: #selector(pageControlDidChange(_:)), for: .valueChanged)
-        scrollView.backgroundColor = .systemRed
+        imagesScrollView.backgroundColor = .background
+        imagesPageControl.addTarget(self, action: #selector(pageControlDidChange(_:)), for: .valueChanged)
+        configureScrollView()
         setup()
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        pageControl.frame = CGRect(x: 10, y: view.frame.height - 100, width: view.frame.width - 20, height: 70)
-        scrollView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height - 100)
-        
-        if scrollView.subviews.count == 2 {
-            configureScrollView()
-        }
     }
     
     @objc func pageControlDidChange(_ sender: UIPageControl) {
         let current = sender.currentPage
-        scrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(current), y: 0), animated: true)
+        imagesScrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(current), y: 0), animated: true)
     }
     
     func configureScrollView() {
-        scrollView.contentSize = CGSize(width: view.frame.width * 2, height: view.frame.height)
-        scrollView.isPagingEnabled = true
-        let colors: [UIColor] = [.systemBlue, .systemGreen]
+        imagesScrollView.contentSize = CGSize(width: view.frame.width * 2, height: view.frame.height)
+        imagesScrollView.isPagingEnabled = true
+        let images: [UIImage] = [UIImage(named: "defaultImage")!, UIImage(named: "defaultImage")!]
         
         for i in 0..<2 {
-            let page = UIView(frame: CGRect(x: view.frame.width * CGFloat(i), y: 0, width: view.frame.width, height: view.frame.height))
-            page.backgroundColor = colors[i]
-            scrollView.addSubview(page)
+            let page = UIView(frame: CGRect(x: (view.frame.width * CGFloat(i)) + 16, y: 130, width: 360, height: 400))
+            let imageView = UIImageView(image: images[i])
+            imageView.contentMode = .scaleAspectFill
+            imageView.clipsToBounds = true
+            imageView.frame = CGRect(x: 0, y: 0, width: 360, height: 400)
+            page.addSubview(imageView)
+            imagesScrollView.addSubview(page)
         }
     }
 }
@@ -65,11 +85,37 @@ class TaskDetailsViewController: UIViewController {
 // MARK: - Extensions
 extension TaskDetailsViewController: ViewCodeProtocol {
     func addSubviews() {
-        view.addSubview(scrollView)
-        view.addSubview(pageControl)
+        view.addSubview(imagesScrollView)
+        view.addSubview(imagesPageControl)
+        view.addSubview(taskTitleLabel)
+        view.addSubview(detailsStack)
     }
     
     func setupConstraints() {
-        
+        NSLayoutConstraint.activate([
+            imagesScrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            imagesScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            imagesScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            imagesScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
+            imagesPageControl.widthAnchor.constraint(equalToConstant: 48),
+            imagesPageControl.heightAnchor.constraint(equalToConstant: 24),
+            imagesPageControl.topAnchor.constraint(equalTo: view.topAnchor, constant: 496),
+            imagesPageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            taskTitleLabel.topAnchor.constraint(equalTo: imagesPageControl.bottomAnchor, constant: 20),
+            taskTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            detailsStack.topAnchor.constraint(equalTo: taskTitleLabel.bottomAnchor, constant: 48),
+            detailsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            detailsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+        ])
+    }
+}
+
+extension TaskDetailsViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let pageIndex = round(scrollView.contentOffset.x / view.frame.width)
+        imagesPageControl.currentPage = Int(pageIndex)
     }
 }
