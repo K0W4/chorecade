@@ -17,17 +17,17 @@ extension ChooseCategoryViewController: UICollectionViewDelegate {
         
         if indexPath.section == 0 {
             
-            let category = categories.filter { $0.nivel == 1 }[indexPath.item]
+            let category = categories.filter { $0.level == 1 }[indexPath.item]
             onCategorySelected?(category)
             
         } else if indexPath.section == 1 {
             
-            let category = categories.filter { $0.nivel == 2 }[indexPath.item]
+            let category = categories.filter { $0.level == 2 }[indexPath.item]
             onCategorySelected?(category)
             
         } else {
             
-            let category = categories.filter { $0.nivel == 3 }[indexPath.item]
+            let category = categories.filter { $0.level == 3 }[indexPath.item]
             onCategorySelected?(category)
             
         }

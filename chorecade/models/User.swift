@@ -5,6 +5,7 @@
 //  Created by João Pedro Teixeira de Carvalho on 10/06/25.
 //
 import Foundation
+import UIKit
 import CloudKit
 
 struct User {
@@ -12,7 +13,6 @@ struct User {
     var nickname: String
     
     let recordID: CKRecord.ID
-    
     var title: String?
     
     var avatar: Avatar = Avatar()
