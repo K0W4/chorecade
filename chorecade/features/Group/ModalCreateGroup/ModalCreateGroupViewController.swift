@@ -8,6 +8,10 @@
 import UIKit
 import CloudKit
 
+protocol ModalCreateGroupDelegate: AnyObject {
+    func didCreateGroup()
+}
+
 class ModalCreateGroupViewController: UIViewController {
     
     // MARK: Variables
@@ -15,6 +19,7 @@ class ModalCreateGroupViewController: UIViewController {
     let colorOptions: [UIColor] = [.selectionRed, .selectionOrange, .selectionYellow, .selectionGreen, .selectionBlue, .selectionPurple]
     var colorButtons: [UIButton] = []
     var selectedColorIndex: Int? = nil
+    weak var delegate: ModalCreateGroupDelegate?
     
     // MARK: Components
     private lazy var headerView: ModalHeader = {
@@ -319,6 +324,7 @@ class ModalCreateGroupViewController: UIViewController {
             do {
                 let groupCode = try await createGroup(groupName: groupName, prize: prize)
                 print("Grupo criado com código: \(groupCode)")
+                self.delegate?.didCreateGroup()
                 self.dismiss(animated: true)
             } catch {
                 print("Erro ao criar grupo: \(error.localizedDescription)")
@@ -332,7 +338,7 @@ class ModalCreateGroupViewController: UIViewController {
                     self.present(alert, animated: true)
                 }
             }
-        }
+        }        
     }
 }
 

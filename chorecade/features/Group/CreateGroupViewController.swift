@@ -13,6 +13,7 @@ class CreateGroupViewController: UIViewController {
     // MARK: Variables
     var usersByGroup: [[CKRecord]] = []
     var groupNames: [String] = []
+    var groupRecords: [CKRecord] = []
     
     // MARK: - Components
     private lazy var groupLabel: UILabel = {
@@ -81,9 +82,12 @@ class CreateGroupViewController: UIViewController {
         tableView.register(GroupsTableViewCell.self, forCellReuseIdentifier: "GroupsTableViewCell")
         tableView.dataSource = self
         tableView.delegate = self
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 108 
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-        tableView.isScrollEnabled = false
+//        tableView.isScrollEnabled = true
+        tableView.alwaysBounceVertical = true
         tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         
         return tableView
@@ -97,9 +101,7 @@ class CreateGroupViewController: UIViewController {
         view.backgroundColor = .background
         
         Repository.start()
-        setup()
-        
-    // Verifica se está logado no iCloud
+            
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
             DispatchQueue.main.async {
@@ -115,8 +117,6 @@ class CreateGroupViewController: UIViewController {
                     self.present(alert, animated: true)
                     return
                 }
-
-                // Se estiver logado, pede permissão
                 self.requestiCloudPermission { granted in
                     if !granted {
                         let alert = UIAlertController(
@@ -128,12 +128,24 @@ class CreateGroupViewController: UIViewController {
                             exit(0)
                         })
                         self.present(alert, animated: true)
+                    } else {
+                        // Só busca userID e carrega grupos se permissão concedida!
+                        Task {
+                            let recordID = await Repository.fetchiCloudUserRecordID()
+                            if let recordID = recordID {
+                                print("User recordID carregado:", recordID.recordName)
+                                self.loadGroupsAndUsersForCurrentUser()
+                                print("group Names: \(self.groupNames)")
+                                self.updateLayout()
+                                self.setup()
+                            } else {
+                                print("Erro: não conseguiu obter o userRecordID")
+                            }
+                        }
                     }
                 }
             }
         }
-        
-        loadGroupsAndUsersForCurrentUser()
         
 //        fetchGroupRecord(byCode: "01383B")
     }
@@ -176,6 +188,7 @@ class CreateGroupViewController: UIViewController {
         
         let modalVC = ModalCreateGroupViewController()
         modalVC.modalPresentationStyle = .automatic
+        modalVC.delegate = self
         self.present(modalVC, animated: true)
 //        nameTextField.text = ""
 //        Task {
@@ -221,10 +234,22 @@ class CreateGroupViewController: UIViewController {
         }
     }
     
+    func updateLayout() {
+        groupsTableView.removeFromSuperview()
+        emptyState.removeFromSuperview()
+        addSubviews()
+        setupConstraints()
+        groupsTableView.reloadData()
+    }
+    
     private func loadGroupsAndUsersForCurrentUser() {
-        guard let currentUserID = Repository.userRecordID?.recordName else { return }
 
+        guard let currentUserID = Repository.userRecordID?.recordName else {
+                print("currentUserID NIL!");
+                return
+            }
         Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
+            self?.groupRecords = groups
             self?.groupNames = groups.compactMap { $0["name"] as? String }
             self?.usersByGroup = Array(repeating: [], count: groups.count)
             let total = groups.count
@@ -236,12 +261,26 @@ class CreateGroupViewController: UIViewController {
                     fetched += 1
                     if fetched == total {
                         DispatchQueue.main.async {
-                            self?.groupsTableView.reloadData()
+                            self?.updateLayout()
                         }
                     }
                 }
             }
         }
+    }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "contentSize" {
+            // Exemplo: pode ajustar o height da tableView conforme o contentSize
+            // let newContentSize = change?[.newKey] as? CGSize
+            // print("Novo contentSize:", newContentSize)
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
+    }
+    
+    deinit {
+        groupsTableView.removeObserver(self, forKeyPath: "contentSize")
     }
 }
 
@@ -271,12 +310,23 @@ extension CreateGroupViewController: ViewCodeProtocol {
             textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            
-            emptyState.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor),
-            emptyState.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            emptyState.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            emptyState.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        if groupNames.isEmpty {
+            NSLayoutConstraint.activate([
+                emptyState.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor),
+                emptyState.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                emptyState.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                emptyState.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+        } else {
+            NSLayoutConstraint.activate([
+                groupsTableView.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 16),
+                groupsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+                groupsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+                groupsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
+            ])
+        }
     }
 }
 
@@ -402,18 +452,40 @@ extension CreateGroupViewController: UITableViewDataSource {
             return UITableViewCell()
         }
         let users = usersByGroup[indexPath.row]
-            let groupName = groupNames[indexPath.row]
-            cell.configure(with: users)
-            cell.groupTitleLabel.text = groupName
-//            cell.groupLabel.text = groupRecord["name"] as? String
-            return cell
-        
+        let groupName = groupNames[indexPath.row]
+        cell.configure(with: users)
+        cell.groupTitleLabel.text = groupName
+        let groupRecord = groupRecords[indexPath.row]
+        if let asset = groupRecord["groupImage"] as? CKAsset,
+           let fileURL = asset.fileURL,
+           let imageData = try? Data(contentsOf: fileURL),
+           let image = UIImage(data: imageData) {
+            cell.groupImage.image = image
+        } else {
+            cell.groupImage.image = UIImage(named: "defaultImage")
+        }
         
         return cell
     }
 }
 
 extension CreateGroupViewController: UITableViewDelegate {
-    // Implemente os métodos desejados aqui
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 100
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+}
+
+extension CreateGroupViewController: ModalCreateGroupDelegate {
+    func didCreateGroup() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.loadGroupsAndUsersForCurrentUser()
+        }
+    }
 }
 

@@ -56,7 +56,7 @@ extension Repository {
     }
     
     // MARK: Fetch iCloud user record
-    static private func fetchiCloudUserRecordID() async -> CKRecord.ID? {
+    static func fetchiCloudUserRecordID() async -> CKRecord.ID? {
         await withCheckedContinuation { continuation in
             CKContainer.default().fetchUserRecordID { recordID, error in
                 if let error = error {
