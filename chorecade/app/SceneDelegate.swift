@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // MARK: - iCloud login verification
         
-        let tabBarController = TabBarController()
+        let tabBarController = CreateGroupViewController()
         window.rootViewController = tabBarController
         
         self.window = window

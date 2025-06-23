@@ -14,6 +14,7 @@ class CreateGroupViewController: UIViewController {
     var usersByGroup: [[CKRecord]] = []
     var groupNames: [String] = []
     var groupRecords: [CKRecord] = []
+    var loadingOverlay: LoadingOverlay?
     
     // MARK: - Components
     private lazy var groupLabel: UILabel = {
@@ -262,6 +263,8 @@ class CreateGroupViewController: UIViewController {
                     if fetched == total {
                         DispatchQueue.main.async {
                             self?.updateLayout()
+                            self?.loadingOverlay?.hide()
+                            self?.loadingOverlay = nil
                         }
                     }
                 }
@@ -483,7 +486,8 @@ extension CreateGroupViewController: UITableViewDelegate {
 
 extension CreateGroupViewController: ModalCreateGroupDelegate {
     func didCreateGroup() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+        loadingOverlay = LoadingOverlay.show(on: self.view)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.loadGroupsAndUsersForCurrentUser()
         }
     }
