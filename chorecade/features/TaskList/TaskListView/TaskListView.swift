@@ -29,13 +29,10 @@ class TaskListView: UIView {
         groupSelector.onGroupSelected = { [weak self] selectedGroup in
             guard let self = self else { return } // Ensure self is still around
             
-            // Update the stored currentSelectedGroup
             self.currentSelectedGroup = selectedGroup
-            print("DEBUG: Group selector notified new group: \(selectedGroup.name)")
+            Repository.currentGroup = selectedGroup
             
-            // Fetch tasks for the newly selected group and reload
-            self.tasksByGroup = Persistence.getTasks(for: selectedGroup.id)
-            print("DEBUG: Fetched \(self.tasksByGroup.count) tasks for \(selectedGroup.name)")
+            self.tasksByGroup = Repository.getTasksForCurrentGroup()
             self.tasksTableView.reloadData()
         }
         return groupSelector
@@ -82,7 +79,7 @@ class TaskListView: UIView {
     
     // MARK: - Mocks
     
-    var tasksByGroup: [Task] = []
+    var tasksByGroup: [Tasks] = []
     
     
     // MARK: - Functions
@@ -96,7 +93,7 @@ class TaskListView: UIView {
         
         // Initialize currentSelectedGroup from groupSelector
         self.currentSelectedGroup = groupSelector.selectedGroup
-        self.tasksByGroup = Persistence.getTasks(for: currentSelectedGroup?.id ?? UUID())
+        self.tasksByGroup = Repository.getTasksForCurrentGroup()
         
         // Update currentSelectedGroup when group changes
 //        groupSelector.onGroupSelected = { [weak self] selected in
@@ -177,10 +174,10 @@ extension TaskListView: ViewCodeProtocol {
 
 extension TaskListView: AddNewTaskModalDelegate {
     
-    func didAddTask(task: Task) {
+    func didAddTask() {
         if let selectedGroupId = self.currentSelectedGroup?.id {
-            self.tasksByGroup = Persistence.getTasks(for: selectedGroupId)
-            print("DEBUG: Task added. Reloading tasks for group ID: \(selectedGroupId). New count: \(self.tasksByGroup.count)")
+            self.tasksByGroup = Repository.getTasksForCurrentGroup()
+           
             self.tasksTableView.reloadData()
         } else {
             print("DEBUG: No group selected in TaskListView, cannot refresh after adding task.")

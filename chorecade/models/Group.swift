@@ -6,10 +6,12 @@
 //
 import Foundation
 import UIKit
+import CloudKit
 
 class Group {
     var name: String
-    
+    var id: CKRecord.ID
+    var groupCode: String
     var groupImage: UIImage? = nil
     
     var startDate: Date
@@ -24,12 +26,17 @@ class Group {
     
     var users: [User] = []
     
-    var tasks: [Taskk] = []
+    var tasks: [Tasks] = []
     
-    init(name: String, startDate: Date, duration: Int, prize: String) {
+    init(id: CKRecord.ID, name: String, startDate: Date, duration: Int, prize: String, groupImage: UIImage? = nil, users: [User] = [], tasks: [Tasks] = [], groupCode: String) {
+        self.id = id
         self.name = name
         self.startDate = startDate
         self.duration = duration
         self.prize = prize
+        self.groupImage = groupImage
+        self.users = users
+        self.tasks = tasks
+        self.groupCode = groupCode
     }
 }

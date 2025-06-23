@@ -13,14 +13,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
         
-        if Persistence.getGroups() == nil {
-            MockData.initialize()
-        } else {
-            print("App launched with existing data. Skipping MockData initialization.")
-        }
+        Repository.start()
+        
         
         // MARK: - iCloud login verification
-        window.rootViewController = CreateGroupViewController()
+        window.rootViewController = TaskListViewController()
         
         self.window = window
         window.makeKeyAndVisible()

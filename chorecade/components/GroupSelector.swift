@@ -6,10 +6,14 @@
 //
 
 import UIKit
+import CloudKit
 
 class GroupSelector: UIView {
     
     var onGroupSelected: ((Group) -> Void)?
+    var groupRecords: [CKRecord] = [] {
+      
+    }
     
     // MARK: Components
     lazy var button: UIButton = {
@@ -28,7 +32,7 @@ class GroupSelector: UIView {
         config.imagePlacement = .trailing
         config.imagePadding = 8
         
-        let titleText = selectedGroup?.name ?? mockGroups.first?.name ?? "Select"
+        let titleText = selectedGroup?.name ?? groupModels.first?.name ?? "Select"
 
         let attributedTitle = AttributedString(
             titleText,
@@ -46,35 +50,61 @@ class GroupSelector: UIView {
     
     // MARK: Data -- ajustar para buscar os grupos por user
     
-    var availableGroups: [Group] {
-            return Persistence.getGroups()?.groups ?? []
-        }
     
-    var mockGroups: [Group] {
-        return Persistence.getGroups()?.groups ?? []
+    func getGroupByUser() {
+        guard let currentUserID = Repository.userRecordID?.recordName else {
+                print("currentUserID NIL!");
+                return
+            }
+        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
+            self?.groupRecords = groups
+        }
     }
     
-    private var groupSelections: [UIAction] {
-            availableGroups.map { group in
-                let action = UIAction(title: group.name) { [weak self] _ in
-                    self?.selectedGroup = group
-                }
-                
-                // Apply custom styling to the menu items
-                let attributed = NSAttributedString(
-                    string: group.name,
-                    attributes: [
-                        .foregroundColor: UIColor.primaryPurple300 // Assuming this is defined
-                    ]
-                )
-                action.setValue(attributed, forKey: "attributedTitle")
-                
-                action.state = (group.id == selectedGroup?.id) ? .on : .off
-                
-                return action
-            }
-        }
+    var groupModels: [Group] = []
 
+    // 2. Quando carregar os records, processe eles assíncronamente:
+    func processGroupRecords() {
+        Task {
+            var models: [Group] = []
+            try await withThrowingTaskGroup(of: Group?.self) { group in
+                for record in groupRecords {
+                    group.addTask {
+                        await Repository.createGroupModel(byRecord: record)
+                    }
+                }
+                for try await groupResult in group {
+                    if let model = groupResult {
+                        models.append(model)
+                    }
+                }
+            }
+            self.groupModels = models
+        }
+    }
+//
+    
+    private var groupSelections: [UIAction] {
+        groupRecords.map { group in
+            let action = UIAction(title: group["name"] as? String ?? "Unknown Group") { [weak self] _ in
+                       Task {
+                           self?.selectedGroup = await Repository.createGroupModel(byRecord: group)
+                       }
+                   }
+            
+            let attributed = NSAttributedString(
+                string: group["name"] as? String ?? "Unknown Group",
+                attributes: [
+                    .foregroundColor: UIColor.primaryPurple300
+                ]
+            )
+            action.setValue(attributed, forKey: "attributedTitle")
+            
+            action.state = (group.recordID.recordName == selectedGroup?.id.recordName) ? .on : .off
+            
+            return action
+        }
+    }
     var selectedGroup: Group? {
             didSet {
                 // Update the button's title when the selectedGroup changes
@@ -92,21 +122,21 @@ class GroupSelector: UIView {
         super.init(frame: frame)
         setup()
         
-        if let lastSelectedGroupId = UserDefaults.standard.string(forKey: "lastSelectedGroupId"),
-                   let uuid = UUID(uuidString: lastSelectedGroupId),
-                   let savedGroup = availableGroups.first(where: { $0.id == uuid }) {
-                    self.selectedGroup = savedGroup
-                } else {
-                    self.selectedGroup = availableGroups.first // Default to the first group if no preference
-                }
-                
-                // Now that selectedGroup is set, configure the button's menu and initial title
-                updateButtonConfiguration()
-                
-                // Trigger the initial onGroupSelected event, so TaskListView gets the current group
-                if let initialGroup = selectedGroup {
-                    onGroupSelected?(initialGroup)
-                }
+//        if let lastSelectedGroupId = UserDefaults.standard.string(forKey: "lastSelectedGroupId"),
+//                  
+//                   let savedGroup = groupModels.first(where: { $0.id == uuid }) {
+//                    self.selectedGroup = savedGroup
+//                } else {
+//                    self.selectedGroup = groupModels.first // Default to the first group if no preference
+//                }
+//                
+//                // Now that selectedGroup is set, configure the button's menu and initial title
+//                updateButtonConfiguration()
+//                
+//                // Trigger the initial onGroupSelected event, so TaskListView gets the current group
+//                if let initialGroup = selectedGroup {
+//                    onGroupSelected?(initialGroup)
+//                }
         
     }
     

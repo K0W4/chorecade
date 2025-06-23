@@ -39,12 +39,20 @@ extension TaskListView: UITableViewDataSource {
         
         let task = tasksByGroup[indexPath.row]
         
+        guard let userRecord = Repository.userRecord else {
+            print("No user record found")
+            return cell
+        }
+        
+        let userName = userRecord["nickname"] as? String ?? "Default nickname"
+        
+        
+        
         cell.taskTitleLabel.text = task.category.title
         cell.taskDescriptionLabel.text = task.description
         cell.taskPointsLabel.text = "+\(task.category.points) points"
-        cell.nameUserLabel.text = task.user.nickname
+        cell.nameUserLabel.text = userName
         cell.taskImage.image = task.beforeImage
-        
         return cell
     }
     
