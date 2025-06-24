@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         // MARK: - iCloud login verification
         
-        let tabBarController = TabBarController()
+        let tabBarController = UserDataViewController()
         window.rootViewController = tabBarController
         
         self.window = window
@@ -27,7 +27,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     }
     
-    func changeRootViewController(_ vc: UIViewController, animated: Bool = true) {
+    func changeRootViewController(_ vc: UIViewController, animated: Bool = false) {
         guard let window = self.window else {
             return
         }

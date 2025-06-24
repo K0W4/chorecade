@@ -14,6 +14,7 @@ struct Repository {
     static var userRecord: CKRecord?
     static var groupRecord: CKRecord?
     static var currentGroup: Group?
+    static var currentUserNickname: String?
     
     static func start() {
         Task {
@@ -366,6 +367,46 @@ extension Repository {
                         )
                     )
                 }
+            }
+        }
+    }
+    
+    static func updateUserNickname(_ nickname: String, completion: ((Bool) -> Void)? = nil) {
+        guard let userRecordID = userRecordID else {
+            print("userRecordID não disponível")
+            completion?(false)
+            return
+        }
+        
+        // Busca o registro atual do usuário
+        CKContainer.default().publicCloudDatabase.fetch(withRecordID: userRecordID) { record, error in
+            if let error = error {
+                print("Erro ao buscar registro do usuário: \(error.localizedDescription)")
+                completion?(false)
+                return
+            }
+            
+            guard let record = record else {
+                print("Registro do usuário não encontrado.")
+                completion?(false)
+                return
+            }
+            
+            // Atualiza o nickname no registro
+            record["nickname"] = nickname as CKRecordValue
+            
+            // Salva a alteração no banco
+            CKContainer.default().publicCloudDatabase.save(record) { savedRecord, saveError in
+                if let saveError = saveError {
+                    print("Erro ao salvar nickname: \(saveError.localizedDescription)")
+                    completion?(false)
+                    return
+                }
+                
+                // Atualiza a variável local
+                currentUserNickname = nickname
+                print("Nickname atualizado com sucesso para: \(nickname)")
+                completion?(true)
             }
         }
     }
