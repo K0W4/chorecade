@@ -125,6 +125,10 @@ class TaskListTableViewCell: UITableViewCell {
         backgroundColor = .clear
         setup()
         
+        let bgColorView = UIView()
+        bgColorView.backgroundColor = .clear
+        self.selectedBackgroundView = bgColorView
+        
         taskTitleLabel.numberOfLines = 2
         taskTitleLabel.lineBreakMode = .byWordWrapping
     }

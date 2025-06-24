@@ -49,7 +49,7 @@ class CreateGroupViewController: UIViewController {
     }()
     
     private lazy var codeTextField: UITextField = {
-        let textField = Components.getTextField(placeholder: "Ex: #6AE8T")
+        let textField = Components.getTextField(placeholder: "Ex: 6AE8T")
         textField.setContentHuggingPriority(.defaultLow, for: .horizontal)
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         return textField
@@ -154,72 +154,12 @@ class CreateGroupViewController: UIViewController {
     
     
     // MARK: - Button functions
-//    @objc func handleJoinButton() {
-//        let code = codeTextField.text ?? ""
-//        codeTextField.text = ""
-//        Task {
-//            do {
-//                let updatedGroup = try await joinGroupAndSaveUser(withCode: code)
-//                print("Joined group! Group name: \(updatedGroup["name"] ?? "")")
-//
-//                DispatchQueue.main.async {
-//                    let alert = UIAlertController(
-//                        title: "Joined Group",
-//                        message: "You successfully joined: \(updatedGroup["name"] ?? "")",
-//                        preferredStyle: .alert
-//                    )
-//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-//                    self.present(alert, animated: true)
-//                }
-//            } catch {
-//                print("Failed to join group: \(error.localizedDescription)")
-//                DispatchQueue.main.async {
-//                    let alert = UIAlertController(
-//                        title: "Error",
-//                        message: "Could not join group: \(error.localizedDescription)",
-//                        preferredStyle: .alert
-//                    )
-//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-//                    self.present(alert, animated: true)
-//                }
-//            }
-//        }
-//    }
-    
     @objc func handleCreateButton() {
         
         let modalVC = ModalCreateGroupViewController()
         modalVC.modalPresentationStyle = .automatic
         modalVC.delegate = self
         self.present(modalVC, animated: true)
-//        nameTextField.text = ""
-//        Task {
-//            do {
-//                let newGroupCode = try await createGroup(groupName: name)
-//                print("Group created! Code: \(newGroupCode)")
-//
-//                DispatchQueue.main.async {
-//                    let alert = UIAlertController(
-//                        title: "Group Created",
-//                        message: "Your group code is: \(newGroupCode)",
-//                        preferredStyle: .alert
-//                    )
-//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-//                    self.present(alert, animated: true)
-//                }
-//            } catch {
-//                print("Error creating group: \(error.localizedDescription)")
-//                DispatchQueue.main.async {
-//                    let alert = UIAlertController(
-//                        title: "Error",
-//                        message: "Failed to create group: \(error.localizedDescription)",
-//                        preferredStyle: .alert
-//                    )
-//                    alert.addAction(UIAlertAction(title: "OK", style: .default))
-//                    self.present(alert, animated: true)
-//                }
-//            }
-//        }
     }
     
     // MARK: Functions
