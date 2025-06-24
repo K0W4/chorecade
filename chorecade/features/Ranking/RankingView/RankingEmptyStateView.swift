@@ -7,8 +7,8 @@
 
 import UIKit
 
-class RankingEmptyState: UIView {
-        
+class RankingEmptyStateView: UIView {
+    // MARK: Components
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -35,14 +35,12 @@ class RankingEmptyState: UIView {
         container.layer.cornerRadius = 16
         container.isUserInteractionEnabled = true
 
-        // Label
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.text = "Share Ranking"
         label.font = UIFont(name: "Jersey10-Regular", size: 16)
         label.textColor = .black
 
-        // Image
         let imageView = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
@@ -92,7 +90,6 @@ class RankingEmptyState: UIView {
         stack.alignment = .center
         stack.setCustomSpacing(24, after: titleLabel)
         stack.setCustomSpacing(48, after: shareRankingButton)
-        
         return stack
     }()
     
@@ -160,7 +157,6 @@ class RankingEmptyState: UIView {
             singleUserImage.heightAnchor.constraint(equalToConstant: 77),
             singleUserImage.widthAnchor.constraint(equalToConstant: 64.84),
             cardView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor),
-//            cardView.heightAnchor.constraint(equalToConstant: 429),
         ])
         return stackView
     }()
@@ -185,10 +181,9 @@ class RankingEmptyState: UIView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
 }
 
-extension RankingEmptyState: ViewCodeProtocol {
+extension RankingEmptyStateView: ViewCodeProtocol {
     func setup() {
         addSubviews()
         setupConstraints()
@@ -202,31 +197,13 @@ extension RankingEmptyState: ViewCodeProtocol {
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-
             stack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 33),
-            stack.leadingAnchor.constraint(
-                equalTo: self.leadingAnchor,
-                constant: 20
-            ),
-            stack.trailingAnchor.constraint(
-                equalTo: self.trailingAnchor,
-                constant: -20
-            ),
+            stack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
+            stack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
 
             podiumStack.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 48),
-            
-            podiumStack.leadingAnchor.constraint(
-                equalTo: self.leadingAnchor,
-                constant: 20
-            ),
-            podiumStack.trailingAnchor.constraint(
-                equalTo: self.trailingAnchor,
-                constant: -20
-            ),
-            
-            
+            podiumStack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
+            podiumStack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
         ])
     }
-
 }
-

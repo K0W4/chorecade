@@ -28,9 +28,6 @@ class TaskListViewController: UIViewController {
         }
     }
     
-    
-    
-    
     func handleTap() {
         let modalViewController = AddNewTaskModalViewController()
         
