@@ -70,6 +70,15 @@ class GroupDetailsViewController: UIViewController {
         return stackView
     }()
     
+//    lazy var usersTableView: UITableView = {
+//        let tableView = UITableView()
+//        tableView.translatesAutoresizingMaskIntoConstraints = false
+//        tableView.register(UserTableViewCell.self, forCellReuseIdentifier: UserTableViewCell.reuseIdentifier)
+//        tableView.delegate = self
+//        tableView.dataSource = self
+//        tableView.separatorStyle = .none
+//    }()
+    
     // MARK: Override ViewDidLoad
     override func viewDidLoad() {
         super.viewDidLoad()
