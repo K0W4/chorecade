@@ -19,8 +19,17 @@ class TaskListViewController: UIViewController {
     // MARK: - Functions
     override func viewDidLoad() {
         super.viewDidLoad()
+        Repository.start()
         setup()
+        
+        taskListView.onTaskSelected = { [weak self] task in
+            let detailsVC = TaskDetailsViewController()
+            detailsVC.task = task
+            self?.navigationController?.pushViewController(detailsVC, animated: true)
+        }
     }
+    
+    
     
     
     func handleTap() {

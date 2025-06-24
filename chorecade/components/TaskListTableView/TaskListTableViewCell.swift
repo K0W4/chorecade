@@ -16,7 +16,7 @@ class TaskListTableViewCell: UITableViewCell {
     
     // Task
     
-    lazy var taskTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask)
+    lazy var taskTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask, alignment: .left)
     
     lazy var taskDescriptionLabel = Components.getLabel(content: "", font: Fonts.descriptionTask)
     
@@ -46,7 +46,7 @@ class TaskListTableViewCell: UITableViewCell {
         let stackView = UIStackView(arrangedSubviews: [taskImage, taskLabelsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
-        stackView.spacing = 8
+        stackView.spacing = 16
         stackView.alignment = .center
         return stackView
     }()
@@ -125,11 +125,12 @@ class TaskListTableViewCell: UITableViewCell {
         backgroundColor = .clear
         setup()
         
+        let bgColorView = UIView()
+        bgColorView.backgroundColor = .clear
+        self.selectedBackgroundView = bgColorView
+        
         taskTitleLabel.numberOfLines = 2
         taskTitleLabel.lineBreakMode = .byWordWrapping
-//        
-//        taskDescriptionLabel.numberOfLines = 2
-//        taskDescriptionLabel.lineBreakMode = .byWordWrapping
     }
 
     required init?(coder: NSCoder) {

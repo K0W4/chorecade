@@ -10,8 +10,8 @@ import Foundation
 
 public class RankingViewController: UIViewController {
     
-    lazy var emptyStateRanking: EmptyState = {
-        var empty = EmptyState()
+    lazy var emptyStateRanking: RankingEmptyState = {
+        var empty = RankingEmptyState()
         empty.translatesAutoresizingMaskIntoConstraints = false
         empty.titleText = "Ranking"
         empty.descriptionText = "Add your friends in \"Create Group\""

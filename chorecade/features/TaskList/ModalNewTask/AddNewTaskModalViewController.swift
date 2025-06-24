@@ -8,7 +8,7 @@
 import UIKit
 
 protocol AddNewTaskModalDelegate: AnyObject {
-    func didAddTask(task: Task)
+    func didAddTask()
 }
 
 class AddNewTaskModalViewController: UIViewController {
@@ -53,7 +53,9 @@ class AddNewTaskModalViewController: UIViewController {
     }()
     
     lazy var addPhotoStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [addBeforePhoto, addAfterPhoto])
+        let stackView = UIStackView(arrangedSubviews: [
+            addBeforePhoto, addAfterPhoto,
+        ])
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
         stackView.spacing = 8
@@ -91,7 +93,9 @@ class AddNewTaskModalViewController: UIViewController {
     )
     
     lazy var descriptionStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [descriptionLabel, descriptionTextField])
+        let stackView = UIStackView(arrangedSubviews: [
+            descriptionLabel, descriptionTextField,
+        ])
         stackView.axis = .vertical
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -99,7 +103,10 @@ class AddNewTaskModalViewController: UIViewController {
     }()
     
     lazy var stackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [addPhotoStackView, categoryButton, categorySelectionView, descriptionStackView])
+        let stackView = UIStackView(arrangedSubviews: [
+            addPhotoStackView, categoryButton, categorySelectionView,
+            descriptionStackView,
+        ])
         stackView.axis = .vertical
         stackView.spacing = 16
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -113,7 +120,10 @@ class AddNewTaskModalViewController: UIViewController {
         view.backgroundColor = .background
         setup()
         
-        let tapDismissKeyboard = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        let tapDismissKeyboard = UITapGestureRecognizer(
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
         view.addGestureRecognizer(tapDismissKeyboard)
         
         addBeforePhoto.onPhotoRequest = { [weak self] in
@@ -125,7 +135,6 @@ class AddNewTaskModalViewController: UIViewController {
         }
         
     }
-    
     
     // MARK: Functions
     
@@ -143,7 +152,6 @@ class AddNewTaskModalViewController: UIViewController {
             self?.categorySelectionView.isHidden = false
         }
         
-        
         if let sheet = modalViewController.sheetPresentationController {
             sheet.prefersGrabberVisible = true
         }
@@ -152,65 +160,70 @@ class AddNewTaskModalViewController: UIViewController {
     }
     
     @objc func addButtonTapped() {
-        
-        guard let group = selectedGroup else {
-            let termsAlert = UIAlertController(
-                title: "Error!",
-                message: "No group selected for this task.",
-                preferredStyle: .alert
-            )
-            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(termsAlert, animated: true, completion: nil)
-            return
+        Task {
+            // o código que era async, incluindo await e try await
+            // por exemplo:
+            guard let group = selectedGroup else {
+                let termsAlert = UIAlertController(
+                    title: "Error!",
+                    message: "No group selected for this task.",
+                    preferredStyle: .alert
+                )
+                termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(termsAlert, animated: true, completion: nil)
+                return
+            }
+            
+            guard let beforeImage = addBeforePhoto.selectedImage else {
+                let termsAlert = UIAlertController(
+                    title: "Warning!",
+                    message: "Add a photo before you start cleaning",
+                    preferredStyle: .alert
+                )
+                
+                termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(termsAlert, animated: true, completion: nil)
+                
+                return
+            }
+            
+            let afterImage = addAfterPhoto.selectedImage
+            
+            guard let category = selectedCategory else {
+                let termsAlert = UIAlertController(
+                    title: "Warning!",
+                    message: "Select a category",
+                    preferredStyle: .alert
+                )
+                
+                termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
+                present(termsAlert, animated: true, completion: nil)
+                
+                return
+            }
+            
+            let descriptionText = descriptionTextField.text ?? ""
+            
+            if let currentUserID = Repository.userRecordID {
+                do {
+                    try await Repository.addTask(
+                        toGroupWithCode: group.groupCode,
+                        category: category.id,
+                        description: descriptionText,
+                        points: category.points,
+                        userId: currentUserID,
+                        photoBefore: beforeImage,
+                        photoAfter: afterImage
+                    )
+                } catch {
+                    print("Error")
+                }
+                
+                    self.delegate?.didAddTask()
+               
+                dismiss(animated: true)
+            }
         }
-        
-        guard let beforeImage = addBeforePhoto.selectedImage else {
-            let termsAlert = UIAlertController(
-                title: "Warning!",
-                message: "Add a photo before you start cleaning",
-                preferredStyle: .alert
-            )
-            
-            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(termsAlert, animated: true, completion: nil)
-            
-            return
-        }
-        
-        let afterImage = addAfterPhoto.selectedImage
-        
-        guard let category = selectedCategory else {
-            let termsAlert = UIAlertController(
-                title: "Warning!",
-                message: "Select a category",
-                preferredStyle: .alert
-            )
-            
-            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(termsAlert, animated: true, completion: nil)
-            
-            return
-        }
-        
-        let descriptionText = descriptionTextField.text ?? ""
-        
-        let newTask = Task(
-            id: UUID(),
-            category: category,
-            description: descriptionText,
-            user: Persistence.getGroups()?.groups[0].users[0] ?? User(nickname: "julia") ,
-            group: group,
-            beforePic: beforeImage,
-            afterPic: afterImage,
-        )
-        
-        Persistence.addTask(newTask: newTask)
-        
-        delegate?.didAddTask(task: newTask)
-        
-        dismiss(animated: true, completion: nil)
-        
-       
     }
     
 }
@@ -226,38 +239,67 @@ extension AddNewTaskModalViewController: ViewCodeProtocol {
             
             // Header View
             
-            headerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            headerView.topAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.topAnchor,
+                constant: 16
+            ),
+            headerView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor
+            ),
+            headerView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor
+            ),
             
             // Stack View
             
-            stackView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 32),
-            stackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+            stackView.topAnchor.constraint(
+                equalTo: headerView.bottomAnchor,
+                constant: 32
+            ),
+            stackView.leadingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.leadingAnchor,
+                constant: 16
+            ),
+            stackView.trailingAnchor.constraint(
+                equalTo: view.safeAreaLayoutGuide.trailingAnchor,
+                constant: -16
+            ),
         ])
     }
     
-    
 }
 
-extension AddNewTaskModalViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+extension AddNewTaskModalViewController: UIImagePickerControllerDelegate,
+    UINavigationControllerDelegate
+{
+    func imagePickerController(
+        _ picker: UIImagePickerController,
+        didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey:
+            Any]
+    ) {
         picker.dismiss(animated: true)
-        
+
         guard let image = info[.originalImage] as? UIImage else { return }
-        
+
         activePhotoComponent?.selectedImage = image
     }
 }
 
-
 extension AddNewTaskModalViewController: UITextFieldDelegate {
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+    func textField(
+        _ textField: UITextField,
+        shouldChangeCharactersIn range: NSRange,
+        replacementString string: String
+    ) -> Bool {
         if textField == descriptionTextField {
             let currentText = textField.text ?? ""
-            guard let stringRange = Range(range, in: currentText) else { return false }
-            let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+            guard let stringRange = Range(range, in: currentText) else {
+                return false
+            }
+            let updatedText = currentText.replacingCharacters(
+                in: stringRange,
+                with: string
+            )
             return updatedText.count <= 42
         }
         return true

@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 
 struct Category: Codable {
-    let id: UUID
+    let id: Int
     let title: String
     let points: Int
     let level: Int

@@ -13,20 +13,33 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
         
-        if Persistence.getGroups() == nil {
-            MockData.initialize()
-        } else {
-            print("App launched with existing data. Skipping MockData initialization.")
-        }
+        window.overrideUserInterfaceStyle = .light
+        Repository.start()
         
         // MARK: - iCloud login verification
-        window.rootViewController = TaskListViewController()
+        
+        let tabBarController = UserDataViewController()
+        window.rootViewController = tabBarController
         
         self.window = window
         window.makeKeyAndVisible()
+    }
+    
+    func changeRootViewController(_ vc: UIViewController, animated: Bool = false) {
+        guard let window = self.window else {
+            return
+        }
         
-       
-
+        // change the root view controller to your specific view controller
+        if animated {
+                UIView.transition(with: window, duration: 0.5, options: [.transitionCrossDissolve], animations: {
+                    window.rootViewController = vc
+                }, completion: nil)
+            } else {
+                window.rootViewController = vc
+            }
+        // pesquisar coordinator - animacoes
+        window.rootViewController = vc
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

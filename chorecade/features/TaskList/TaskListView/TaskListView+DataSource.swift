@@ -31,20 +31,24 @@ extension TaskListView: UITableViewDataSource {
             return cell
         }
         
-        
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "taskList-cell", for: indexPath) as? TaskListTableViewCell else {
             return UITableViewCell()
         }
         
         let task = tasksByGroup[indexPath.row]
         
+        guard let userRecord = Repository.userRecord else {
+            print("No user record found")
+            return cell
+        }
+        
+        let userName = userRecord["name"] as? String ?? "Default nickname"
+        
         cell.taskTitleLabel.text = task.category.title
         cell.taskDescriptionLabel.text = task.description
         cell.taskPointsLabel.text = "+\(task.category.points) points"
-        cell.nameUserLabel.text = task.user.nickname
+        cell.nameUserLabel.text = userName
         cell.taskImage.image = task.beforeImage
-        
         return cell
     }
     
