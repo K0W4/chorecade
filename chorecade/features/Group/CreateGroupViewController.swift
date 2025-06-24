@@ -101,6 +101,8 @@ class CreateGroupViewController: UIViewController {
 
         view.backgroundColor = .background
         
+        codeTextField.delegate = self
+        
         Repository.start()
             
         CKContainer.default().accountStatus { status, error in
@@ -147,7 +149,6 @@ class CreateGroupViewController: UIViewController {
                 }
             }
         }
-        
 //        fetchGroupRecord(byCode: "01383B")
     }
     
@@ -337,28 +338,28 @@ extension CreateGroupViewController: ViewCodeProtocol {
 extension CreateGroupViewController {
     
     static func addGroupCodeTo(user: String, code: String) {
-            let publicDB = CKContainer.default().publicCloudDatabase
+        let publicDB = CKContainer.default().publicCloudDatabase
+        
+        CKContainer.default().publicCloudDatabase.fetch(withRecordID: CKRecord.ID(recordName: user)) { record, error in
+            if let error = error {
+                print("Error fetching user record: \(error)")
+                return
+            }
             
-            CKContainer.default().publicCloudDatabase.fetch(withRecordID: CKRecord.ID(recordName: user)) { record, error in
-                if let error = error {
-                    print("Error fetching user record: \(error)")
-                    return
-                }
-                
-                guard let record = record else {
-                    print("User record not found.")
-                    return
-                }
-                
-                record["groupCode"] = code as NSString
-                
-                publicDB.save(record) { _, saveError in
-                    if let saveError = saveError {
-                        print("Error saving user record: \(saveError)")
-                    }
+            guard let record = record else {
+                print("User record not found.")
+                return
+            }
+            
+            record["groupCode"] = code as NSString
+            
+            publicDB.save(record) { _, saveError in
+                if let saveError = saveError {
+                    print("Error saving user record: \(saveError)")
                 }
             }
         }
+    }
     
     func joinGroupAndSaveUser(withCode code: String) async throws -> CKRecord {
         let publicDB = CKContainer.default().publicCloudDatabase
@@ -443,6 +444,13 @@ extension CreateGroupViewController {
         
         return savedGroup
     }
+    
+    func didEnterGroup() {
+        loadingOverlay = LoadingOverlay.show(on: self.view)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.loadGroupsAndUsersForCurrentUser()
+        }
+    }
 }
 
 extension CreateGroupViewController: UITableViewDataSource {
@@ -481,6 +489,47 @@ extension CreateGroupViewController: UITableViewDelegate {
         let view = UIView()
         view.backgroundColor = .clear
         return view
+    }
+}
+
+extension CreateGroupViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder() // Fecha o teclado
+        guard textField == codeTextField else { return true }
+        guard let code = codeTextField.text, !code.isEmpty else { return true }
+
+        loadingOverlay = LoadingOverlay.show(on: self.view)
+        Task {
+            do {
+                let group = try await joinGroupAndSaveUser(withCode: code)
+                DispatchQueue.main.async {
+                    self.loadingOverlay?.hide()
+                    self.loadingOverlay = nil
+                    let alert = UIAlertController(
+                        title: "Entered Group",
+                        message: "You entered the group: \(group["name"] as? String ?? "")",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                    self.didEnterGroup()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    self.loadingOverlay?.hide()
+                    self.loadingOverlay = nil
+                    let alert = UIAlertController(
+                        title: "Erro",
+                        message: "Não foi possível entrar no grupo.\n\(error.localizedDescription)",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self.present(alert, animated: true)
+                }
+            }
+        }
+
+        return true
     }
 }
 
