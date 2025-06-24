@@ -295,8 +295,6 @@ class ModalCreateGroupViewController: UIViewController {
         }
 
         sender.backgroundColor = .primaryPurple300
-
-        // Aqui você pode aplicar o filtro, se quiser
     }
 
     // MARK: Proprieties
@@ -311,8 +309,6 @@ class ModalCreateGroupViewController: UIViewController {
         addGroupPhoto.onPhotoRequest = { [weak self] in
             self?.activePhotoComponent = self?.addGroupPhoto
         }
-        
-        
     }
     
     // MARK: Functions
@@ -323,11 +319,11 @@ class ModalCreateGroupViewController: UIViewController {
         Task {
             do {
                 let groupCode = try await createGroup(groupName: groupName, prize: prize)
-                print("Grupo criado com código: \(groupCode)")
+                print("Your group code is: \(groupCode)")
                 self.delegate?.didCreateGroup()
                 self.dismiss(animated: true)
             } catch {
-                print("Erro ao criar grupo: \(error.localizedDescription)")
+                print("Error creating group: \(error.localizedDescription)")
                 DispatchQueue.main.async {
                     let alert = UIAlertController(
                         title: "Error",

@@ -17,7 +17,7 @@ class GroupsTableViewCell: UITableViewCell {
     
     // Group
     
-    lazy var groupTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask)
+    lazy var groupTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask, alignment: .left)
     
     lazy var groupImage: UIImageView = {
         let imageView = UIImageView()
