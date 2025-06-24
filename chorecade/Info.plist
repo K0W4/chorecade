@@ -2,6 +2,15 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>To help you register completed tasks with images, we need access to your photo library. This lets you select photos as proof of your tasks.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>To help you register completed tasks with photos, we need access to your camera. This allows you to capture proof of your accomplishments in the app.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Jersey10-Regular.ttf</string>
+		<string>SF-Pro-Text-Regular.otf</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

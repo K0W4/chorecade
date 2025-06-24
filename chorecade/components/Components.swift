@@ -7,20 +7,18 @@
 import UIKit
 
 struct Components {
-    
-    // MARK: - Get label
+    // MARK: - Get Label
     static func getLabel(
         content: String,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
+        font: UIFont? = Fonts.taskCategory,
         fontSize: Int = 17,
-        textColor: UIColor = .red,
+        textColor: UIColor = .black,
         alignment: NSTextAlignment = .justified,
-        hiden: Bool = false
+        hidden: Bool = false
     ) -> UILabel {
         
         if font == nil {
             print("Font not found for \(content)")
-            
         }
         
         let label = UILabel()
@@ -29,54 +27,59 @@ struct Components {
         label.textAlignment = alignment
         label.textColor = textColor
         label.font = font
-        label.isHidden = hiden
+        label.isHidden = hidden
         
         return label
     }
     
-    // MARK: - Get textField
+    // MARK: - Get TextField
     static func getTextField(
         placeholder: String = "",
         isPassword: Bool = false,
-        height: Int = 46,
+        height: Int = 40,
         delegate: UITextFieldDelegate? = nil
     ) -> UITextField {
         let textField = UITextField()
         textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.placeholder = placeholder
-        textField.tintColor = .cyan
-        textField.textColor = .cyan
-        textField.backgroundColor = .yellow
+        textField.tintColor = .black
+        textField.textColor = .black
+        textField.backgroundColor = .primaryPurple100
         textField.isSecureTextEntry = isPassword
         textField.heightAnchor.constraint(equalToConstant: CGFloat(height)).isActive = true
         textField.autocapitalizationType = .none
-        textField.layer.borderColor = UIColor.red.cgColor
-        textField.layer.cornerRadius = 8
+        textField.layer.borderColor = UIColor.lightGray.cgColor
+        textField.layer.cornerRadius = 16
+        textField.attributedPlaceholder = NSAttributedString(
+            string: placeholder,
+            attributes: [
+                .foregroundColor: UIColor.black.withAlphaComponent(0.5)
+            ]
+        )
         
         if delegate != nil {
             textField.delegate = delegate
         }
         
-        // Add internal padding
-        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        // Add padding
+        textField.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.leftViewMode = .always
-        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 12, height: 0))
+        textField.rightView = UIView(frame: CGRect(x: 0, y: 0, width: 16, height: 0))
         textField.rightViewMode = .always
         
         return textField
     }
     
-    // MARK: - Get button
+    // MARK: - Get Button
     static func getButton(
         content: String = "",
         image: UIImage? = nil,
         action: Selector,
-        font: UIFont? = UIFont.systemFont(ofSize: 17),
+        font: UIFont? = Fonts.button,
         fontSize: Int = 17,
-        textColor: UIColor = .white,
-        backgroundColor: UIColor = .cyan,
-        cornerRadius: Int = 8,
-        size: Int = 46
+        textColor: UIColor = .black,
+        backgroundColor: UIColor = .primaryPurple,
+        cornerRadius: Int = 16,
+        size: Int = 58
     ) -> UIButton {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -96,9 +99,6 @@ struct Components {
         
         button.heightAnchor.constraint(equalToConstant: CGFloat(size)).isActive = true
         
-        
         return button
     }
-    
-    
 }
