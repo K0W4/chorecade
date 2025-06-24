@@ -31,8 +31,6 @@ extension TaskListView: UITableViewDataSource {
             return cell
         }
         
-        
-        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "taskList-cell", for: indexPath) as? TaskListTableViewCell else {
             return UITableViewCell()
         }
@@ -44,9 +42,7 @@ extension TaskListView: UITableViewDataSource {
             return cell
         }
         
-        let userName = userRecord["nickname"] as? String ?? "Default nickname"
-        
-        
+        let userName = userRecord["name"] as? String ?? "Default nickname"
         
         cell.taskTitleLabel.text = task.category.title
         cell.taskDescriptionLabel.text = task.description
