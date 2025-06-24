@@ -13,6 +13,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         let window = UIWindow(windowScene: windowScene)
         
+        window.overrideUserInterfaceStyle = .light
         Repository.start()
         
         // MARK: - iCloud login verification
@@ -22,9 +23,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         self.window = window
         window.makeKeyAndVisible()
-        
-       
-
     }
     
     func changeRootViewController(_ vc: UIViewController, animated: Bool = false) {

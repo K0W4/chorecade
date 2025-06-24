@@ -18,7 +18,7 @@ struct Repository {
     
     static func start() {
         Task {
-            guard let id = await fetchiCloudUserRecordID() else { 
+            guard let id = await fetchiCloudUserRecordID() else {
                 print("Couldn't fetch iCloud user record ID")
                 return
             }
@@ -133,7 +133,7 @@ extension Repository {
     }
     
     // MARK: Creates user model by record
-    private static func createTaskModel(byRecord record: CKRecord) -> Tasks {
+     static func createTaskModel(byRecord record: CKRecord) -> Tasks {
         let id = record.recordID
         let categoryID = record["category"] as? Int ?? 1
         let category = CategoriesList.allCategories[categoryID - 1]
@@ -143,12 +143,12 @@ extension Repository {
         var beforeImage: UIImage? = nil
         var afterImage: UIImage? = nil
         
-        if let beforeAsset = record["beforeImage"] as? CKAsset,
+        if let beforeAsset = record["photoBefore"] as? CKAsset,
            let imageData = try? Data(contentsOf: beforeAsset.fileURL!) {
             beforeImage = UIImage(data: imageData)
         }
         
-        if let afterAsset = record["afterImage"] as? CKAsset,
+        if let afterAsset = record["photoAfter"] as? CKAsset,
            let imageData = try? Data(contentsOf: afterAsset.fileURL!) {
             afterImage = UIImage(data: imageData)
         }
@@ -168,7 +168,7 @@ extension Repository {
         )
     }
     
-    private static func createTaskModel(byRecordID recordID: CKRecord.ID) async
+     static func createTaskModel(byRecordID recordID: CKRecord.ID) async
     -> Tasks {
         if let record = await fetchRecordBy(id: recordID) {
             return createTaskModel(byRecord: record)
@@ -177,7 +177,7 @@ extension Repository {
     }
     
     // MARK: Creates group model by record
-     static func createGroupModel(byRecord record: CKRecord) async -> Group {
+    static func createGroupModel(byRecord record: CKRecord) async -> Group {
         let id = record.recordID
         let name = record["name"] as? String ?? "Default name"
         let startDate = record["startDate"] as? Date ?? Date()
@@ -185,28 +185,28 @@ extension Repository {
         let groupCode = record["groupCode"] as? String ?? "Default groupCode"
         let membersString = record["members"] as? [String] ?? []
         let prize = record["prize"] as? String ?? "Default prize"
-        let taskString = record["tasks"] as? [String] ?? []
         var groupImage: UIImage? = nil
-        
+
         if let groupImageAsset = record["groupImage"] as? CKAsset,
            let imageData = try? Data(contentsOf: groupImageAsset.fileURL!) {
             groupImage = UIImage(data: imageData)
         }
-        
+
         var members: [User] = []
         for memberString in membersString {
             let recordID = CKRecord.ID(recordName: memberString)
             let user = await createUserModel(byRecordID: recordID)
             members.append(user)
         }
-        
+
+        // Fetch tasks dynamically using groupRef instead of relying on taskString
+        let taskRecords = try? await fetchTasksForGroup(record.recordID)
         var taskList: [Tasks] = []
-        for tasksString in taskString {
-            let recordID = CKRecord.ID(recordName: tasksString)
-            let task = await createTaskModel(byRecordID: recordID)
+        for taskRecord in taskRecords ?? [] {
+            let task = createTaskModel(byRecord: taskRecord)
             taskList.append(task)
         }
-        
+
         return Group(
             id: id,
             name: name,
@@ -348,13 +348,25 @@ extension Repository {
             taskRecord["photoAfter"] = CKAsset(fileURL: afterURL)
         }
         
-        // 4. Salva a tarefa no banco
+        // 4. Salva a tarefa no banco e atualiza o grupo
         return try await withCheckedThrowingContinuation { continuation in
             publicDB.save(taskRecord) { savedRecord, error in
                 if let error = error {
                     continuation.resume(throwing: error)
                 } else if let savedRecord = savedRecord {
-                    continuation.resume(returning: savedRecord)
+                    // Atualiza o campo 'tasks' do grupo
+                    var currentTasks = groupRecord["tasks"] as? [String] ?? []
+                    currentTasks.append(savedRecord.recordID.recordName)
+                    groupRecord["tasks"] = currentTasks
+
+                    // Salva o grupo novamente com o campo atualizado
+                    publicDB.save(groupRecord) { _, groupError in
+                        if let groupError = groupError {
+                            continuation.resume(throwing: groupError)
+                        } else {
+                            continuation.resume(returning: savedRecord)
+                        }
+                    }
                 } else {
                     continuation.resume(
                         throwing: NSError(
@@ -445,14 +457,12 @@ extension Repository {
         
     }
     
-    // MARK: Fetch all tasks from group
-    static private func fetchTasks(forGroupCode groupCode: String) async throws
-    -> [CKRecord]
-    {
+    // MARK: Fetch all tasks from group using groupRef
+    static func fetchTasksForGroup(_ groupRecordID: CKRecord.ID) async throws -> [CKRecord] {
         let publicDB = CKContainer.default().publicCloudDatabase
-        let predicate = NSPredicate(format: "groupCode == %@", groupCode)
+        let predicate = NSPredicate(format: "groupRef == %@", groupRecordID)
         let query = CKQuery(recordType: "Task", predicate: predicate)
-        
+
         return try await withCheckedThrowingContinuation { continuation in
             publicDB.perform(query, inZoneWith: nil) { records, error in
                 if let error = error {

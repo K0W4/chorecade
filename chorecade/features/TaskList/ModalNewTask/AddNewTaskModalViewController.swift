@@ -218,79 +218,14 @@ class AddNewTaskModalViewController: UIViewController {
                 } catch {
                     print("Error")
                 }
-                dismiss(animated: true, completion: nil)
+                
+                    self.delegate?.didAddTask()
+               
+                dismiss(animated: true)
             }
         }
     }
     
-//    @objc func addButtonTapped() async throws {
-//        
-//        guard let group = selectedGroup else {
-//            let termsAlert = UIAlertController(
-//                title: "Error!",
-//                message: "No group selected for this task.",
-//                preferredStyle: .alert
-//            )
-//            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-//            present(termsAlert, animated: true, completion: nil)
-//            return
-//        }
-//        
-//        guard let beforeImage = addBeforePhoto.selectedImage else {
-//            let termsAlert = UIAlertController(
-//                title: "Warning!",
-//                message: "Add a photo before you start cleaning",
-//                preferredStyle: .alert
-//            )
-//            
-//            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-//            present(termsAlert, animated: true, completion: nil)
-//            
-//            return
-//        }
-//        
-//        let afterImage = addAfterPhoto.selectedImage
-//        
-//        guard let category = selectedCategory else {
-//            let termsAlert = UIAlertController(
-//                title: "Warning!",
-//                message: "Select a category",
-//                preferredStyle: .alert
-//            )
-//            
-//            termsAlert.addAction(UIAlertAction(title: "OK", style: .default))
-//            present(termsAlert, animated: true, completion: nil)
-//            
-//            return
-//        }
-//        
-//        let descriptionText = descriptionTextField.text ?? ""
-//        
-//        if let currentUserID = Repository.userRecordID {
-//
-//            do {
-//               try await Repository.addTask(
-//                    toGroupWithCode: group.groupCode,
-//                    category: category.id,
-//                    description: descriptionText,
-//                    points: category.points,
-//                    userId: currentUserID,
-//                    photoBefore: beforeImage,
-//                    photoAfter: afterImage,
-//                )
-//                
-//            } catch {
-//                 print("Error")
-//            }
-////            let newTask = Repository.getTask//
-////
-////                delegate?.didAddTask(task: newTask)
-//            dismiss(animated: true, completion: nil)
-//            
-//        }
-//        
-//    }
-//    
 }
 
 extension AddNewTaskModalViewController: ViewCodeProtocol {

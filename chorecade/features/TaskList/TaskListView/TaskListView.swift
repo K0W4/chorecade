@@ -6,11 +6,14 @@
 //
 
 import UIKit
+import CloudKit
 
 class TaskListView: UIView {
     
     // MARK: Variables
     
+    var tasksByGroup: [Tasks] = []
+    var loadingOverlay: LoadingOverlay?
     var currentSelectedGroup: Group?
     
     // MARK: - Components
@@ -26,13 +29,18 @@ class TaskListView: UIView {
     lazy var groupSelector: GroupSelector = {
         let groupSelector = GroupSelector()
         groupSelector.onGroupSelected = { [weak self] selectedGroup in
-            guard let self = self else { return } // Ensure self is still around
-            
+            guard let self = self else { return }
             self.currentSelectedGroup = selectedGroup
             Repository.currentGroup = selectedGroup
-            
-            self.tasksByGroup = Repository.getTasksForCurrentGroup()
-            self.tasksTableView.reloadData()
+          
+            Task {
+                var tasks: [Tasks] = []
+                tasks = selectedGroup.tasks
+                DispatchQueue.main.async {
+                    self.tasksByGroup = tasks
+                    self.tasksTableView.reloadData()
+                }
+            }
         }
         return groupSelector
     }()
@@ -75,10 +83,8 @@ class TaskListView: UIView {
     
     // MARK: - Closure
     var onAddTaskButtonTaped: (() -> Void)?
-    
-    // MARK: - Mocks
-    
-    var tasksByGroup: [Tasks] = []
+    var onTaskSelected: ((Tasks) -> Void)?
+
     
     
     // MARK: - Functions
@@ -88,21 +94,11 @@ class TaskListView: UIView {
         backgroundColor = .background
         setup()
         
-      
-        
         // Initialize currentSelectedGroup from groupSelector
         self.currentSelectedGroup = groupSelector.selectedGroup
-        self.tasksByGroup = Repository.getTasksForCurrentGroup()
+        self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
         
-//         Update currentSelectedGroup when group changes
-//        groupSelector.onGroupSelected = { [weak self] selected in
-//            self?.currentSelectedGroup = selected
-//            self?.tasksByGroup = Repository.getTasksForCurrentGroup(selectedGroup: selected)
-//            
-//            Persistence.getTasks(for: selected.id)
-//            self?.tasksTableView.reloadData()
-//        }
-        
+       
         
     }
     
@@ -115,6 +111,29 @@ class TaskListView: UIView {
         onAddTaskButtonTaped?()
     }
     
+    
+    func reloadTasksForCurrentGroup() {
+        guard let selectedGroup = self.currentSelectedGroup else {
+            print("DEBUG: Nenhum grupo selecionado, não é possível recarregar tarefas.")
+            return
+        }
+
+        Task {
+            do {
+                let updatedTasks = try await Repository.fetchTasksForGroup(selectedGroup.id)
+                DispatchQueue.main.async {
+                    self.tasksByGroup = updatedTasks.map { Repository.createTaskModel(byRecord: $0) }
+                    self.tasksTableView.reloadData()
+                    self.loadingOverlay?.hide()
+                    self.loadingOverlay = nil
+                }
+            } catch {
+                print("Erro ao buscar tarefas para o grupo: \(error)")
+            }
+        }
+    }
+    
+   
     // funcao para definir o tamanho da tableView
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "contentSize" {
@@ -175,14 +194,10 @@ extension TaskListView: ViewCodeProtocol {
 extension TaskListView: AddNewTaskModalDelegate {
     
     func didAddTask() {
-        if let selectedGroupId = self.currentSelectedGroup?.id {
-            self.tasksByGroup = Repository.getTasksForCurrentGroup()
-           
-            self.tasksTableView.reloadData()
-        } else {
-            print("DEBUG: No group selected in TaskListView, cannot refresh after adding task.")
+        loadingOverlay = LoadingOverlay.show(on: self)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.reloadTasksForCurrentGroup()
         }
-        
+       
     }
     
 }

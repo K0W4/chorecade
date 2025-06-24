@@ -9,7 +9,7 @@ import UIKit
 
 class TaskListViewController: UIViewController {
     // MARK: - View
-    private lazy var taskListView: TaskListView = {
+    lazy var taskListView: TaskListView = {
         let view = TaskListView()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.onAddTaskButtonTaped = handleTap
@@ -21,7 +21,15 @@ class TaskListViewController: UIViewController {
         super.viewDidLoad()
         Repository.start()
         setup()
+        
+        taskListView.onTaskSelected = { [weak self] task in
+            let detailsVC = TaskDetailsViewController()
+            detailsVC.task = task
+            self?.navigationController?.pushViewController(detailsVC, animated: true)
+        }
     }
+    
+    
     
     
     func handleTap() {
