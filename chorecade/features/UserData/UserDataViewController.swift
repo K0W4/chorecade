@@ -7,30 +7,23 @@
 
 import UIKit
 import Foundation
+import CloudKit
 
 class UserDataViewController: UIViewController {
     
     // MARK: - Components
-    private lazy var groupLabel: UILabel = {
+    private lazy var titleLabel: UILabel = {
         var label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "Jersey10-Regular", size: 48)
         label.textAlignment = .center
-        label.text = "Insert your data"
+        label.text = "Welcome!"
         label.textColor = .black
         return label
     }()
     
     private lazy var createGroupButton = Components.getButton(content: " Save Data + ", action: #selector(handleSaveButton), font: UIFont(name: "Jersey10-Regular", size: 24))
     
-    lazy var topStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [groupLabel, createGroupButton])
-        stackView.axis = .vertical
-        stackView.distribution = .fill
-        stackView.spacing = 24
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
-    }()
     
     private lazy var nicknameLabel: UILabel = {
         var label = UILabel()
@@ -50,16 +43,14 @@ class UserDataViewController: UIViewController {
     }()
     
     lazy var textFieldStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [nicknameLabel, nicknameTextField])
+        let stackView = UIStackView(arrangedSubviews: [nicknameLabel, nicknameTextField, createGroupButton])
         stackView.axis = .vertical
         stackView.alignment = .leading
         stackView.distribution = .fill
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        nicknameTextField.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            nicknameTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            nicknameTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
+           
         ])
         return stackView
     }()
@@ -69,6 +60,56 @@ class UserDataViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .background
         setup()
+        
+        let tapDismissKeyboard = UITapGestureRecognizer(
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        view.addGestureRecognizer(tapDismissKeyboard)
+        
+        CKContainer.default().accountStatus { status, error in
+            print("Account status:", status.rawValue)
+            DispatchQueue.main.async {
+                if status != .available {
+                    let alert = UIAlertController(
+                        title: "iCloud not available",
+                        message: "You need to be logged in to iCloud to continue.",
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
+                        exit(0)
+                    })
+                    self.present(alert, animated: true)
+                    return
+                }
+                self.requestCloudPermission { granted in
+                    if !granted {
+                        let alert = UIAlertController(
+                            title: "Permission denied",
+                            message: "You need to allow this app to access your iCloud to continue.",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
+                            exit(0)
+                        })
+                        self.present(alert, animated: true)
+                    } else {
+                        // Só busca userID e carrega grupos se permissão concedida!
+                        Task {
+                            let recordID = await Repository.fetchiCloudUserRecordID()
+                            if let recordID = recordID {
+                                self.setup()
+                            } else {
+                                print("Erro: não conseguiu obter o userRecordID")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        
+        
     }
     
     @objc func handleSaveButton() {
@@ -101,24 +142,44 @@ class UserDataViewController: UIViewController {
             }
         }
     }
+    
+    private func requestCloudPermission(completion: @escaping (Bool) -> Void) {
+        CKContainer.default().requestApplicationPermission([.userDiscoverability]) { status, error in
+            DispatchQueue.main.async {
+                if status == .granted {
+                    completion(true)
+                } else {
+                    completion(false)
+                }
+            }
+        }
+    }
 }
 
 // MARK: Extensions
 extension UserDataViewController: ViewCodeProtocol {
     func addSubviews() {
-        view.addSubview(topStackView)
+        view.addSubview(titleLabel)
         view.addSubview(textFieldStackView)
+        view.addSubview(createGroupButton)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            topStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 33),
-            topStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            topStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            nicknameTextField.leadingAnchor.constraint(equalTo: textFieldStackView.leadingAnchor),
+            nicknameTextField.trailingAnchor.constraint(equalTo: textFieldStackView.trailingAnchor),
             
-            textFieldStackView.topAnchor.constraint(equalTo: topStackView.bottomAnchor, constant: 40),
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 33),
+            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            textFieldStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
             textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            createGroupButton.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 20),
+            createGroupButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            createGroupButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
     }
 }

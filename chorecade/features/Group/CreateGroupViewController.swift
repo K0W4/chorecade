@@ -103,7 +103,6 @@ class CreateGroupViewController: UIViewController {
         
         codeTextField.delegate = self
         
-        Repository.start()
             
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
@@ -149,7 +148,6 @@ class CreateGroupViewController: UIViewController {
                 }
             }
         }
-//        fetchGroupRecord(byCode: "01383B")
     }
     
     

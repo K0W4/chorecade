@@ -42,7 +42,10 @@ extension TaskListView: UITableViewDataSource {
             return cell
         }
         
-        let userName = userRecord["name"] as? String ?? "Default nickname"
+        let userName = userRecord["nickname"] as? String ?? "Default nickname"
+        
+        print("userRecord: \(userRecord)")
+        print("nickname field: \(userRecord["nickname"] ?? "not found")")
         
         cell.taskTitleLabel.text = task.category.title
         cell.taskDescriptionLabel.text = task.description

@@ -11,18 +11,32 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     var window: UIWindow?
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
-        let window = UIWindow(windowScene: windowScene)
-        
-        window.overrideUserInterfaceStyle = .light
-        Repository.start()
-        
-        // MARK: - iCloud login verification
-        
-        let tabBarController = UserDataViewController()
-        window.rootViewController = tabBarController
-        
-        self.window = window
-        window.makeKeyAndVisible()
+
+        Task {
+            await Repository.start()
+            let window = UIWindow(windowScene: windowScene)
+            window.overrideUserInterfaceStyle = .light
+            
+            if let userRecord = Repository.userRecord,
+               let nickname = userRecord["nickname"] as? String {
+                
+                let alreadyExists = await Repository.nicknameExists(nickname)
+                
+                if alreadyExists {
+                    let tabBarController = UserDataViewController()
+                    window.rootViewController = tabBarController
+                } else {
+                     let tabBarController = TaskListViewController()
+                     window.rootViewController = tabBarController
+                }
+            } else {
+                print("Nickname não encontrado no userRecord.")
+            }
+
+            self.window = window
+            window.makeKeyAndVisible()
+        }
+
     }
     
     func changeRootViewController(_ vc: UIViewController, animated: Bool = false) {
