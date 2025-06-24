@@ -52,7 +52,6 @@ class PermissionViewController: UIViewController {
                         })
                         self.present(alert, animated: true)
                     } else {
-                        // Só busca userID e carrega grupos se permissão concedida!
                         Task {
                             let recordID = await Repository.fetchiCloudUserRecordID()
                             if let recordID = recordID {
