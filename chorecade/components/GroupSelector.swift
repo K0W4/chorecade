@@ -11,7 +11,7 @@ import CloudKit
 class GroupSelector: UIView {
     
     var onGroupSelected: ((Group) -> Void)?
-    var groupRecords: [CKRecord] = [] 
+    var groupRecords: [CKRecord] = []
     
     // MARK: Components
     lazy var button: UIButton = {
@@ -56,6 +56,7 @@ class GroupSelector: UIView {
             }
         Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
             self?.groupRecords = groups
+            self?.processGroupRecords()
         }
     }
     
@@ -78,6 +79,19 @@ class GroupSelector: UIView {
                 }
             }
             self.groupModels = models
+            
+            // Select the most recently updated group (as a sample logic)
+            if let recentGroupRecord = groupRecords.sorted(by: { ($0.modificationDate ?? .distantPast) > ($1.modificationDate ?? .distantPast) }).first {
+                self.selectedGroup = await Repository.createGroupModel(byRecord: recentGroupRecord)
+            } else {
+                self.selectedGroup = models.first
+            }
+            
+            self.updateButtonConfiguration()
+            
+            if let initialGroup = self.selectedGroup {
+                self.onGroupSelected?(initialGroup)
+            }
         }
     }
 //
@@ -120,17 +134,19 @@ class GroupSelector: UIView {
         super.init(frame: frame)
         setup()
         
+        getGroupByUser()
+        
 //        if let lastSelectedGroupId = UserDefaults.standard.string(forKey: "lastSelectedGroupId"),
-//                  
+//
 //                   let savedGroup = groupModels.first(where: { $0.id == uuid }) {
 //                    self.selectedGroup = savedGroup
 //                } else {
 //                    self.selectedGroup = groupModels.first // Default to the first group if no preference
 //                }
-//                
+//
 //                // Now that selectedGroup is set, configure the button's menu and initial title
 //                updateButtonConfiguration()
-//                
+//
 //                // Trigger the initial onGroupSelected event, so TaskListView gets the current group
 //                if let initialGroup = selectedGroup {
 //                    onGroupSelected?(initialGroup)
