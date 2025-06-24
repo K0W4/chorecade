@@ -11,6 +11,8 @@ import CloudKit
 class TaskListView: UIView {
     
     // MARK: Variables
+    
+    var tasksByGroup: [Tasks] = []
     var loadingOverlay: LoadingOverlay?
     var currentSelectedGroup: Group?
     
@@ -81,10 +83,8 @@ class TaskListView: UIView {
     
     // MARK: - Closure
     var onAddTaskButtonTaped: (() -> Void)?
-    
-    // MARK: - Mocks
-    
-    var tasksByGroup: [Tasks] = []
+    var onTaskSelected: ((Tasks) -> Void)?
+
     
     
     // MARK: - Functions
@@ -99,15 +99,6 @@ class TaskListView: UIView {
         self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
         
        
-//         Update currentSelectedGroup when group changes
-//        groupSelector.onGroupSelected = { [weak self] selected in
-//            self?.currentSelectedGroup = selected
-//            self?.tasksByGroup = Repository.getTasksForCurrentGroup(selectedGroup: selected)
-//
-//            Persistence.getTasks(for: selected.id)
-//            self?.tasksTableView.reloadData()
-//        }
-        
         
     }
     
@@ -140,9 +131,6 @@ class TaskListView: UIView {
                 print("Erro ao buscar tarefas para o grupo: \(error)")
             }
         }
-        // Se buscar tarefas for síncrono:
-//         self.tasksByGroup = Repository.getTasksForCurrentGroup(selectedGroup: selectedGroup)
-//         self.tasksTableView.reloadData()
     }
     
    

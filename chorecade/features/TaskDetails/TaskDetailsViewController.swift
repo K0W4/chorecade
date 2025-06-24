@@ -8,6 +8,9 @@
 import UIKit
 
 class TaskDetailsViewController: UIViewController {
+    
+    var task: Tasks?
+    
     // MARK: - Components
     lazy var imagesScrollView: UIScrollView = {
        let scrollView = UIScrollView()
@@ -58,6 +61,25 @@ class TaskDetailsViewController: UIViewController {
         imagesPageControl.addTarget(self, action: #selector(pageControlDidChange(_:)), for: .valueChanged)
         configureScrollView()
         setup()
+        
+        if let task = task {
+            taskTitleLabel.text = task.category.title
+//            authorNameLabel.text = task.user
+//            dateLabel.text = task.createDate
+        }
+       
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        navigationController?.navigationBar.tintColor = .primaryPurple300
+        tabBarController?.tabBar.isHidden = true
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        tabBarController?.tabBar.isHidden = false
     }
     
     @objc func pageControlDidChange(_ sender: UIPageControl) {

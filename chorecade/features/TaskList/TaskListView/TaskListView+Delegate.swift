@@ -14,8 +14,11 @@ extension TaskListView: UITableViewDelegate {
 //    }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        // open tela de detalhes
         
+        let selectedTask = tasksByGroup[indexPath.row]
+        
+        onTaskSelected?(selectedTask)
+       
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }
