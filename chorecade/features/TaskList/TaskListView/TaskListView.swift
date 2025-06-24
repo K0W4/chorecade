@@ -94,14 +94,9 @@ class TaskListView: UIView {
         backgroundColor = .background
         setup()
         
-        // Initialize currentSelectedGroup from groupSelector
         self.currentSelectedGroup = groupSelector.selectedGroup
         self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
-        
-       
-        
     }
-    
     
     required init?(coder: NSCoder) {
         fatalError("not implemented")

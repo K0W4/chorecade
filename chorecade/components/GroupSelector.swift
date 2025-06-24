@@ -35,7 +35,7 @@ class GroupSelector: UIView {
         let attributedTitle = AttributedString(
             titleText,
             attributes: AttributeContainer([
-                .font: Fonts.nameOnTasks,
+                .font: Fonts.nameOnTasks!,
                 .foregroundColor: UIColor.black,
             ])
         )
@@ -46,9 +46,8 @@ class GroupSelector: UIView {
     }()
     
     
-    // MARK: Data -- ajustar para buscar os grupos por user
-    
-    
+    // MARK: - Functions
+    // Data -- ajustar para buscar os grupos por user
     func getGroupByUser() {
         guard let currentUserID = Repository.userRecordID?.recordName else {
                 print("currentUserID NIL!");
@@ -167,12 +166,12 @@ class GroupSelector: UIView {
             config.imagePlacement = .trailing
             config.imagePadding = 8
             
-            let titleText = selectedGroup?.name ?? "Select Group" // Fallback text
+            let titleText = selectedGroup?.name ?? "Select Group"
             
             let attributedTitle = AttributedString(
                 titleText,
                 attributes: AttributeContainer([
-                    .font: Fonts.nameOnTasks, // Assuming Fonts.nameOnTasks is defined
+                    .font: Fonts.nameOnTasks!,
                     .foregroundColor: UIColor.black,
                 ])
             )
@@ -180,7 +179,6 @@ class GroupSelector: UIView {
             
             button.configuration = config
             
-            // Update the button's menu (important for marking selected item)
             button.menu = UIMenu(title: "Groups", options: [.singleSelection], children: groupSelections)
         }
 }
@@ -193,10 +191,11 @@ extension GroupSelector: ViewCodeProtocol {
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            button.topAnchor.constraint(equalTo: topAnchor),
-            button.bottomAnchor.constraint(equalTo: bottomAnchor),
-            button.leadingAnchor.constraint(equalTo: leadingAnchor),
             button.heightAnchor.constraint(equalToConstant: 44),
+            button.topAnchor.constraint(equalTo: topAnchor),
+            button.leadingAnchor.constraint(equalTo: leadingAnchor),
+            button.trailingAnchor.constraint(equalTo: trailingAnchor),
+            button.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 }

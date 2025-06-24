@@ -13,6 +13,19 @@ class RankingView: UIView {
     var tasksByGroup: [Tasks] = []
     
     // MARK: Components
+    lazy var scrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    
+    lazy var contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+    
+    // MARK: - Verificar
     lazy var groupSelector: GroupSelector = {
         let groupSelector = GroupSelector()
         groupSelector.translatesAutoresizingMaskIntoConstraints = false
@@ -47,7 +60,29 @@ class RankingView: UIView {
         
         return tableView
     }()
+    // MARK: - Verificar
+    
+    lazy var shareRankingButton: UIButton = {
+        let button = UIButton(configuration: .filled(), primaryAction: nil)
+        var config = UIButton.Configuration.filled()
+        config.baseBackgroundColor = .primaryPurple
+        config.baseForegroundColor = .black
+        config.title = "Share Ranking"
+        config.attributedTitle = AttributedString("Share Ranking", attributes: AttributeContainer([
+            .font: UIFont(name: "Jersey10-Regular", size: 16)!
+        ]))
+        config.image = UIImage(systemName: "square.and.arrow.up")
+        config.imagePadding = 8
+        config.imagePlacement = .trailing
+        config.preferredSymbolConfigurationForImage = UIImage.SymbolConfiguration(pointSize: 13, weight: .regular)
+        config.cornerStyle = .capsule
 
+        button.configuration = config
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleShareButton), for: .touchUpInside)
+        return button
+    }()
+    
     private lazy var descriptionLabel: UILabel = {
         var label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -58,54 +93,6 @@ class RankingView: UIView {
         return label
     }()
     
-    private lazy var shareRankingButton: UIView = {
-        let container = UIView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-        container.backgroundColor = .primaryPurple
-        container.layer.cornerRadius = 16
-        container.isUserInteractionEnabled = true
-
-        // Label
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Share Ranking"
-        label.font = UIFont(name: "Jersey10-Regular", size: 16)
-        label.textColor = .black
-
-        // Image
-        let imageView = UIImageView(image: UIImage(systemName: "square.and.arrow.up"))
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFit
-        imageView.tintColor = .black
-
-        let stack = UIStackView(arrangedSubviews: [label, imageView])
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        stack.axis = .horizontal
-        stack.spacing = 8
-        stack.alignment = .center
-        container.addSubview(stack)
-
-
-        NSLayoutConstraint.activate([
-            container.heightAnchor.constraint(equalToConstant: 40),
-            container.widthAnchor.constraint(equalToConstant: 136),
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 16),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -16),
-            stack.topAnchor.constraint(equalTo: container.topAnchor),
-            stack.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-            imageView.widthAnchor.constraint(equalToConstant: 15),
-            imageView.heightAnchor.constraint(equalToConstant: 18)
-        ])
-        
-        imageView.isUserInteractionEnabled = false
-        label.isUserInteractionEnabled = false
-        
-        let tap = UITapGestureRecognizer(target: self, action: #selector(handleShareButton))
-
-        container.addGestureRecognizer(tap)
-
-        return container
-    }()
     
     @objc func handleShareButton() {
         print("Share tapped")
@@ -188,7 +175,6 @@ class RankingView: UIView {
             singleUserImage.heightAnchor.constraint(equalToConstant: 77),
             singleUserImage.widthAnchor.constraint(equalToConstant: 64.84),
             cardView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor),
-//            cardView.heightAnchor.constraint(equalToConstant: 429),
         ])
         return stackView
     }()
@@ -203,8 +189,10 @@ class RankingView: UIView {
     var onAddTaskButtonTaped: (() -> Void)?
     var onTaskSelected: ((Tasks) -> Void)?
 
+    // MARK: - Functions
     override init(frame: CGRect) {
         super.init(frame: frame)
+        backgroundColor = .background
         setup()
     }
 
@@ -221,24 +209,38 @@ extension RankingView: ViewCodeProtocol {
     }
 
     func addSubviews() {
-        addSubview(groupSelector)
-        addSubview(stack)
-        addSubview(podiumStack)
+        addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(groupSelector)
+        contentView.addSubview(shareRankingButton)
+//        contentView.addSubview(podiumStack)
 
     }
 
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            groupSelector.topAnchor.constraint(equalTo: self.topAnchor, constant: 50),
-            groupSelector.centerXAnchor.constraint(equalTo: self.centerXAnchor),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
-            stack.topAnchor.constraint(equalTo: safeAreaLayoutGuide.topAnchor, constant: 33),
-            stack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            stack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
-
-            podiumStack.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 48),
-            podiumStack.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 20),
-            podiumStack.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -20),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            
+            groupSelector.topAnchor.constraint(equalTo: scrollView.topAnchor, constant: 83),
+            groupSelector.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            
+            shareRankingButton.widthAnchor.constraint(equalToConstant: 136),
+            shareRankingButton.heightAnchor.constraint(equalToConstant: 40),
+            shareRankingButton.topAnchor.constraint(equalTo: groupSelector.bottomAnchor, constant: 16),
+            shareRankingButton.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+//
+//            podiumStack.topAnchor.constraint(equalTo: stack.bottomAnchor, constant: 48),
+//            podiumStack.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 20),
+//            podiumStack.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -20),
         ])
     }
 }
