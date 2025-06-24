@@ -16,38 +16,38 @@ struct Repository {
     static var currentGroup: Group?
     static var currentUserNickname: String?
     
-    static func start() {
-        Task {
-            guard let id = await fetchiCloudUserRecordID() else {
-                print("Couldn't fetch iCloud user record ID")
-                return
-            }
-            userRecordID = id
-            print("Current user ID: \(id)")
-            
-            guard let userRecord = await fetchRecordBy(id: id) else {
-                print("Couldn't fetch iCloud user record")
-                return
-            }
-            Repository.userRecord = userRecord
-            print("Current userRecord: \(userRecord)")
-            
-            let groupCodes = userRecord["groupCode"] as? [String] ?? []
-            
-            if let groupCode = groupCodes.first {
-                
-                guard
-                    let groupRecordID = await fetchGroupRecordByCode(
-                        groupCode: groupCode
-                    )
-                else {
-                    print("Couldn't fetch iCloud group record")
-                    return
-                }
-                Repository.groupRecord = groupRecordID
-                print("Current groupRecordID: \(groupRecordID)")
-            }
+    static func start() async {
+        
+        guard let id = await fetchiCloudUserRecordID() else {
+            print("Couldn't fetch iCloud user record ID")
+            return
         }
+        userRecordID = id
+        print("Current user ID: \(id)")
+        
+        guard let userRecord = await fetchRecordBy(id: id) else {
+            print("Couldn't fetch iCloud user record")
+            return
+        }
+        Repository.userRecord = userRecord
+        print("Current userRecord: \(userRecord)")
+        
+        let groupCodes = userRecord["groupCode"] as? [String] ?? []
+        
+        if let groupCode = groupCodes.first {
+            
+            guard
+                let groupRecordID = await fetchGroupRecordByCode(
+                    groupCode: groupCode
+                )
+            else {
+                print("Couldn't fetch iCloud group record")
+                return
+            }
+            Repository.groupRecord = groupRecordID
+            print("Current groupRecordID: \(groupRecordID)")
+        }
+        
     }
     
 }
@@ -56,7 +56,7 @@ extension Repository {
     // MARK: Fetch record by ID
     static private func fetchRecordBy(id: CKRecord.ID) async -> CKRecord? {
         await withCheckedContinuation { continuation in
-            CKContainer.default().privateCloudDatabase.fetch(withRecordID: id) {
+            CKContainer.default().publicCloudDatabase.fetch(withRecordID: id) {
                 record,
                 error in
                 if let error = error {
@@ -107,7 +107,7 @@ extension Repository {
     }
     
     // MARK: Creates user model by record
-     static func createUserModel(byRecord record: CKRecord) -> User {
+    static func createUserModel(byRecord record: CKRecord) -> User {
         let groupCodes = record["groupCode"] as? [String] ?? []
         let nickname = record["nickname"] as? String ?? "No nickname"
         let recordID = record.recordID
@@ -119,7 +119,7 @@ extension Repository {
     }
     
     // MARK: Creates user model by recordID
-     static func createUserModel(byRecordID recordID: CKRecord.ID) async
+    static func createUserModel(byRecordID recordID: CKRecord.ID) async
     -> User
     {
         if let record = await fetchRecordBy(id: recordID) {
@@ -133,7 +133,7 @@ extension Repository {
     }
     
     // MARK: Creates user model by record
-     static func createTaskModel(byRecord record: CKRecord) -> Tasks {
+    static func createTaskModel(byRecord record: CKRecord) -> Tasks {
         let id = record.recordID
         let categoryID = record["category"] as? Int ?? 1
         let category = CategoriesList.allCategories[categoryID - 1]
@@ -168,7 +168,7 @@ extension Repository {
         )
     }
     
-     static func createTaskModel(byRecordID recordID: CKRecord.ID) async
+    static func createTaskModel(byRecordID recordID: CKRecord.ID) async
     -> Tasks {
         if let record = await fetchRecordBy(id: recordID) {
             return createTaskModel(byRecord: record)
@@ -186,19 +186,19 @@ extension Repository {
         let membersString = record["members"] as? [String] ?? []
         let prize = record["prize"] as? String ?? "Default prize"
         var groupImage: UIImage? = nil
-
+        
         if let groupImageAsset = record["groupImage"] as? CKAsset,
            let imageData = try? Data(contentsOf: groupImageAsset.fileURL!) {
             groupImage = UIImage(data: imageData)
         }
-
+        
         var members: [User] = []
         for memberString in membersString {
             let recordID = CKRecord.ID(recordName: memberString)
             let user = await createUserModel(byRecordID: recordID)
             members.append(user)
         }
-
+        
         // Fetch tasks dynamically using groupRef instead of relying on taskString
         let taskRecords = try? await fetchTasksForGroup(record.recordID)
         var taskList: [Tasks] = []
@@ -206,7 +206,7 @@ extension Repository {
             let task = createTaskModel(byRecord: taskRecord)
             taskList.append(task)
         }
-
+        
         return Group(
             id: id,
             name: name,
@@ -358,7 +358,7 @@ extension Repository {
                     var currentTasks = groupRecord["tasks"] as? [String] ?? []
                     currentTasks.append(savedRecord.recordID.recordName)
                     groupRecord["tasks"] = currentTasks
-
+                    
                     // Salva o grupo novamente com o campo atualizado
                     publicDB.save(groupRecord) { _, groupError in
                         if let groupError = groupError {
@@ -432,8 +432,6 @@ extension Repository {
         return []
     }
     
-    
-    
     static private func saveImageToTempDirectory(image: UIImage, name: String)
     -> URL?
     {
@@ -453,16 +451,36 @@ extension Repository {
         }
     }
     
-    static private func createGroupModel() {
-        
+    // MARK: - Verifica se nickname já existe
+    static func nicknameExists(_ nickname: String) async -> Bool {
+        let predicate = NSPredicate(format: "nickname == %@", nickname)
+        let query = CKQuery(recordType: "User", predicate: predicate)
+
+        return await withCheckedContinuation { continuation in
+            CKContainer.default().publicCloudDatabase.perform(query, inZoneWith: nil) { records, error in
+                if let error = error {
+                    print("Erro ao verificar nickname: \(error)")
+                    continuation.resume(returning: false)
+                    return
+                }
+
+                if let records = records, !records.isEmpty {
+                    continuation.resume(returning: true)
+                } else {
+                    continuation.resume(returning: false)
+                }
+            }
+        }
     }
+
+    
     
     // MARK: Fetch all tasks from group using groupRef
     static func fetchTasksForGroup(_ groupRecordID: CKRecord.ID) async throws -> [CKRecord] {
         let publicDB = CKContainer.default().publicCloudDatabase
         let predicate = NSPredicate(format: "groupRef == %@", groupRecordID)
         let query = CKQuery(recordType: "Task", predicate: predicate)
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             publicDB.perform(query, inZoneWith: nil) { records, error in
                 if let error = error {
