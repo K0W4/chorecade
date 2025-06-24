@@ -103,6 +103,12 @@ class CreateGroupViewController: UIViewController {
         
         codeTextField.delegate = self
         
+        let tapDismissKeyboard = UITapGestureRecognizer(
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        view.addGestureRecognizer(tapDismissKeyboard)
+        
             
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
