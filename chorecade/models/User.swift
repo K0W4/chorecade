@@ -17,6 +17,8 @@ struct User {
     let recordID: CKRecord.ID
     var title: String?
     
+    var profilePicture: UIImage?
+    
     var avatar: Avatar = Avatar()
     
     var achievements: [Achievement] = Defaults.defaultAchievements
