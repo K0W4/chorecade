@@ -32,41 +32,114 @@ class GroupDetailsViewController: UIViewController {
         return imageView
     }()
     
-    lazy var groupLabel = Components.getLabel(content: "")
+    lazy var groupLabel = Components.getLabel(content: "teste", font: Fonts.nameTask)
     
-    lazy var codeLabel = Components.getLabel(content: "Code:")
+    lazy var editLabelButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(editLabelTapped), for: .touchUpInside)
+        let image = UIImage(systemName: "pencil")
+        button.setImage(image, for: .normal)
+        button.backgroundColor = .clear
+        button.tintColor = .label
+        return button
+    }()
     
-    lazy var copyCodeLabel = Components.getLabel(content: "")
+    lazy var labelStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [groupLabel, editLabelButton])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.spacing = 8
+        return stackView
+    }()
+    
+    lazy var codeLabel = Components.getLabel(content: "Code:", font: UIFont(name: "Jersey10-Regular", size: 29))
+    
+    lazy var copyCodeLabel = Components.getLabel(content: " 6AE8T", font: UIFont(name: "SFProText-Regular", size: 20))
+    
+    lazy var codeCopiedLabel = Components.getLabel(content: " Copied!", font: UIFont(name: "SFProText-Regular", size: 20))
     
     lazy var copyButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
         let image = UIImage(systemName: "document")
         button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(copyButtonTapped), for: .touchUpInside)
         button.backgroundColor = .clear
+        button.tintColor = .label
         return button
+    }()
+    
+    lazy var codeStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [codeLabel, copyCodeLabel, codeCopiedLabel, copyButton])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.setCustomSpacing(0, after: codeLabel)
+        stackView.setCustomSpacing(5, after: copyCodeLabel)
+        stackView.spacing = 8
+        codeCopiedLabel.isHidden = true
+        return stackView
     }()
     
     lazy var prizeLabel: UILabel = {
         let label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
         label.textColor = .label
-        label.font = Fonts.titleConcludedTask
+        label.font = UIFont(name: "Jersey10-Regular", size: 24)
         label.textAlignment = .center
-        label.numberOfLines = 0
-        label.text = ""
+        label.numberOfLines = 1
+        label.text = "Winner won't pay for the cinema"
         return label
     }()
     
+    lazy var editPrizeButton: UIButton = {
+        let button = UIButton()
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(editPrizeTapped), for: .touchUpInside)
+        let image = UIImage(systemName: "pencil")
+        button.setImage(image, for: .normal)
+        button.tintColor = .label
+        button.backgroundColor = .clear
+        return button
+    }()
+    
+    lazy var trophyImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "trophy")
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
     lazy var prizeStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [prizeLabel])
+        let stackView = UIStackView(arrangedSubviews: [trophyImage, prizeLabel, editPrizeButton])
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .vertical
-        let bgColorView = UIView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.backgroundColor = .clear
+        stackView.heightAnchor.constraint(equalToConstant: 47).isActive = true
         stackView.layer.borderColor = UIColor(named: "primaryPurple300")?.cgColor
         stackView.layer.borderWidth = 1
-        stackView.distribution = .fill
+        stackView.layer.cornerRadius = 8
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
+        stackView.distribution = .equalSpacing
         stackView.spacing = 8
+        return stackView
+    }()
+    
+    lazy var mainStackView: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [groupImage, labelStackView, codeStackView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.distribution = .fill
+        stackView.setCustomSpacing(20, after: groupImage)
+        stackView.setCustomSpacing(10, after: labelStackView)
         return stackView
     }()
     
@@ -75,8 +148,9 @@ class GroupDetailsViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(GroupDetailsTableViewCell.self, forCellReuseIdentifier: GroupDetailsTableViewCell.reuseIdentifier)
         tableView.delegate = self
+        tableView.backgroundColor = .clear
         tableView.dataSource = self
-        tableView.separatorStyle = .none
+        tableView.isScrollEnabled = true
         return tableView
     }()
     
@@ -92,18 +166,71 @@ class GroupDetailsViewController: UIViewController {
     
     // MARK: Functions
     @objc func addButtonTapped() {
+        print("Add button tapped")
+    }
+    
+    @objc func editLabelTapped() {
+        print("Edit label tapped")
+    }
+    
+    @objc func copyButtonTapped() {
+        print("Copy button tapped")
+        copyCodeLabel.isHidden = true
+        codeCopiedLabel.isHidden = false
         
+        UIPasteboard.general.string = copyCodeLabel.text
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
+            self?.copyCodeLabel.isHidden = false
+            self?.codeCopiedLabel.isHidden = true
+        }
+    }
+    
+    @objc func editPrizeTapped() {
+        print("Edit prize tapped")
+
     }
 }
 
 extension GroupDetailsViewController: ViewCodeProtocol {
     func addSubviews() {
-        
+        view.addSubview(headerView)
+        view.addSubview(mainStackView)
+        view.addSubview(prizeStackView)
+        view.addSubview(usersTableView)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
             
+            // Header View
+            
+            headerView.topAnchor.constraint(equalTo: view.topAnchor, constant: 54),
+            headerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            headerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            
+            // Mais Stack
+            
+            mainStackView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 13),
+            mainStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 111),
+            mainStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -111),
+            
+            groupImage.widthAnchor.constraint(equalToConstant: 171),
+            groupImage.heightAnchor.constraint(equalToConstant: 173),
+            
+            prizeStackView.topAnchor.constraint(equalTo: mainStackView.bottomAnchor, constant: 32),
+            prizeStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 17),
+            prizeStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -17),
+            
+            trophyImage.widthAnchor.constraint(equalToConstant: 18),
+            trophyImage.heightAnchor.constraint(equalToConstant: 18),
+            
+            // TableView
+            
+            usersTableView.topAnchor.constraint(equalTo: prizeStackView.bottomAnchor, constant: 16),
+            usersTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            usersTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            usersTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
             
         ])
     }
@@ -123,6 +250,7 @@ extension GroupDetailsViewController: UITableViewDataSource {
     }
 }
 
+
 extension GroupDetailsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return 100
@@ -130,8 +258,32 @@ extension GroupDetailsViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
-        view.backgroundColor = .clear
         return view
+    }
+
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerLabel = UILabel()
+        headerLabel.text = "Members"
+        headerLabel.font = UIFont(name: "Jersey10-Regular", size: 24)
+        headerLabel.textColor = .label
+        headerLabel.textAlignment = .left
+        headerLabel.backgroundColor = .clear
+
+        let containerView = UIView()
+        containerView.addSubview(headerLabel)
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            headerLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            headerLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            headerLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
+            headerLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8)
+        ])
+
+        return containerView
+    }
+
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return 40
     }
 }
 

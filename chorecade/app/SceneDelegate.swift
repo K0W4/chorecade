@@ -17,23 +17,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let window = UIWindow(windowScene: windowScene)
             window.overrideUserInterfaceStyle = .light
             
-            if let userRecord = Repository.userRecord{
-                
-                if userRecord["nickname"] is String {
-                    
-                    let tabBarController = TabBarController()
-                    window.rootViewController = tabBarController
-                    
-                } else {
-                    let tabBarController = UserDataViewController()
-                    window.rootViewController = tabBarController
-                }
-                
-            } else {
-                let tabBarController = PermissionViewController()
-                window.rootViewController = tabBarController
-                print("Nickname não encontrado no userRecord.")
-            }
+//            if let userRecord = Repository.userRecord{
+//                
+//                if userRecord["nickname"] is String {
+//                    
+//                    let tabBarController = TabBarController()
+//                    window.rootViewController = tabBarController
+//                    
+//                } else {
+//                    let tabBarController = UserDataViewController()
+//                    window.rootViewController = tabBarController
+//                }
+//                
+//            } else {
+//                let tabBarController = PermissionViewController()
+//                window.rootViewController = tabBarController
+//                print("Nickname não encontrado no userRecord.")
+//            }
+            
+            let tabBarController = GroupDetailsViewController()
+            window.rootViewController = tabBarController
             
             self.window = window
             window.makeKeyAndVisible()

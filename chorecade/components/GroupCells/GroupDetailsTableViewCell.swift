@@ -17,14 +17,14 @@ class GroupDetailsTableViewCell: UITableViewCell {
     
     // Group
     
-    lazy var userLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask, alignment: .left)
+    lazy var userLabel = Components.getLabel(content: "User", font: Fonts.titleConcludedTask, alignment: .left)
     
     lazy var userImage: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.image = UIImage(named: "defaultImage")
         imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 16
+        imageView.layer.cornerRadius = 37.5
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -32,7 +32,10 @@ class GroupDetailsTableViewCell: UITableViewCell {
     lazy var deleteButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.setImage(UIImage(systemName: "minus.circle.fill"), for: .normal)
+        let image = UIImage(systemName: "minus.circle.fill")?
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 24, weight: .regular))
+        button.setImage(image, for: .normal)
+        button.addTarget(self, action: #selector(deleteUser), for: .touchUpInside)
         button.tintColor = .systemRed
         return button
     }()
@@ -41,8 +44,11 @@ class GroupDetailsTableViewCell: UITableViewCell {
         let stackView = UIStackView(arrangedSubviews: [userImage, userLabel, deleteButton])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
+        stackView.alignment = .center
         stackView.distribution = .fill
-        stackView.spacing = 8
+        stackView.setCustomSpacing(20, after: userImage)
+        stackView.layoutMargins = .init(top: 0, left: 16, bottom: 0, right: 25)
+        stackView.isLayoutMarginsRelativeArrangement = true
         return stackView
     }()
     
@@ -56,14 +62,20 @@ class GroupDetailsTableViewCell: UITableViewCell {
         bgColorView.backgroundColor = .clear
         self.selectedBackgroundView = bgColorView
         
-        userLabel.setContentHuggingPriority(.required, for: .horizontal)
-        userLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        userLabel.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        deleteButton.setContentHuggingPriority(.required, for: .horizontal)
+        deleteButton.setContentCompressionResistancePriority(.required, for: .horizontal)
         userLabel.numberOfLines = 1
         userLabel.lineBreakMode = .byTruncatingTail
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: Functions
+    @objc func deleteUser() {
+        print("deleteUser")
     }
 }
 
