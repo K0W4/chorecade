@@ -149,10 +149,10 @@ extension Repository {
         return User(
             groupCodes: groupCodes,
             nickname: nickname,
+            points: points,
             recordID: recordID,
             avatar: avatar,
             avatarHead: avatarHead,
-            points: points,
         )
     }
     

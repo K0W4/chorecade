@@ -87,7 +87,7 @@ class GroupsTableViewCell: UITableViewCell {
     func configure(with users: [User]) {
         userImagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
         for user in users {
-            let image = user.profilePicture ?? UIImage(named: "defaultImage")
+            let image = user.avatarHead ?? UIImage(named: "defaultImage")
             let imageView = UIImageView(image: image)
             imageView.contentMode = .scaleAspectFill
             imageView.layer.cornerRadius = 21

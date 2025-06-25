@@ -19,7 +19,6 @@ struct User {
     
     var avatar: UIImage?
     var avatarHead: UIImage?
-    var profilePicture: UIImage?
     
     var achievements: [Achievement] = Defaults.defaultAchievements
     
