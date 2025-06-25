@@ -14,7 +14,11 @@ class CreateGroupViewController: UIViewController {
 //    var usersByGroup: [[CKRecord]] = []
 //    var groupNames: [String] = []
 //    var groupRecords: [CKRecord] = []
-    var groupModels: [Group] = []
+    var groupModels: [Group] = [] {
+        didSet {
+            updateLayout()
+        }
+    }
     var loadingOverlay: LoadingOverlay?
     
     // MARK: - Components
@@ -110,7 +114,6 @@ class CreateGroupViewController: UIViewController {
         )
         view.addGestureRecognizer(tapDismissKeyboard)
         
-            
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
             DispatchQueue.main.async {
@@ -162,6 +165,15 @@ class CreateGroupViewController: UIViewController {
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateLayout()
+        
+        Task {
+            await loadGroupsAndUsersForCurrentUser()
+        }
+    }
+    
     
     // MARK: - Button functions
     @objc func handleCreateButton() {
@@ -202,11 +214,7 @@ class CreateGroupViewController: UIViewController {
 
         do {
             let groupRecords = try await Repository.fetchGroupsForUser(userID: currentUserID)
-//            self.groupRecords = groupRecords
-//            self.groupNames = groupRecords.compactMap { $0["name"] as? String }
-//            self.usersByGroup = Array(repeating: [], count: groupRecords.count)
-
-            // 🧠 Convert CKRecord -> Group model using async function
+            
             self.groupModels = try await withThrowingTaskGroup(of: Group.self) { group in
                 for record in groupRecords {
                     group.addTask {
@@ -214,6 +222,7 @@ class CreateGroupViewController: UIViewController {
                     }
                 }
                 
+                groupsTableView.reloadData()
                 self.updateLayout()
                 self.loadingOverlay?.hide()
                 self.loadingOverlay = nil
