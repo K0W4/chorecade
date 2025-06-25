@@ -12,8 +12,12 @@ struct User {
     var groupCodes: [String]
     var nickname: String
     
+    var points: Int
+    
     let recordID: CKRecord.ID
     var title: String?
+    
+    var profilePicture: UIImage?
     
     var avatar: Avatar = Avatar()
     
