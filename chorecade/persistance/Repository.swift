@@ -132,12 +132,27 @@ extension Repository {
         let groupCodes = record["groupCode"] as? [String] ?? []
         let nickname = record["nickname"] as? String ?? "No nickname"
         let recordID = record.recordID
+        var avatarHead: UIImage? = nil
+        var avatar: UIImage? = nil
         let points = record["points"] as? Int ?? 0
+        
+        if let avatarHeadAsset = record["avatarHead"] as? CKAsset,
+           let imageData = try? Data(contentsOf: avatarHeadAsset.fileURL!) {
+            avatarHead = UIImage(data: imageData)
+        }
+        
+        if let avatarAsset = record["avatar"] as? CKAsset,
+           let imageData = try? Data(contentsOf: avatarAsset.fileURL!) {
+            avatar = UIImage(data: imageData)
+        }
+        
         return User(
             groupCodes: groupCodes,
             nickname: nickname,
+            recordID: recordID,
+            avatar: avatar,
+            avatarHead: avatarHead,
             points: points,
-            recordID: recordID
         )
     }
     
@@ -436,6 +451,50 @@ extension Repository {
         }
     }
     
+    // MARK: addAvatar
+    static func addUserAvatar(avatar: UIImage, avatarHead: UIImage, completion: ((Bool) -> Void)? = nil) {
+        guard let userRecordID = userRecordID else {
+            print("userRecordID não disponível")
+            completion?(false)
+            return
+        }
+        
+        // Busca o registro atual do usuário
+        CKContainer.default().publicCloudDatabase.fetch(withRecordID: userRecordID) { record, error in
+            if let error = error {
+                print("Erro ao buscar registro do usuário: \(error.localizedDescription)")
+                completion?(false)
+                return
+            }
+            
+            guard let record = record else {
+                print("Registro do usuário não encontrado.")
+                completion?(false)
+                return
+            }
+            
+            // Atualiza o avatar no registro usando CKAsset
+            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.jpg") {
+                record["avatar"] = CKAsset(fileURL: avatarURL)
+            }
+
+            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.jpg") {
+                record["avatarHead"] = CKAsset(fileURL: avatarHeadURL)
+            }
+            
+            // Salva a alteração no banco
+            CKContainer.default().publicCloudDatabase.save(record) { savedRecord, saveError in
+                if let saveError = saveError {
+                    print("Erro ao salvar avatar: \(saveError.localizedDescription)")
+                    completion?(false)
+                    return
+                }
+                
+                print("Avatar atualizado com sucesso.")
+                completion?(true)
+            }
+        }
+    }
     
     static func getTasksForCurrentGroup() -> [Tasks]
     {

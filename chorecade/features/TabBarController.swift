@@ -53,7 +53,7 @@ class TabBarController: UITabBarController {
         let tabItem = UITabBarItem(title: title, image: image, selectedImage: image)
         
         // setup rootViewController
-        let rootViewController = CreateGroupViewController()
+        let rootViewController = ProfileViewController()
         rootViewController.tabBarItem = tabItem
         
         // setup navigationController

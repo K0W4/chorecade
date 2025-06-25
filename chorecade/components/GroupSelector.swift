@@ -168,7 +168,7 @@ class GroupSelector: UIView {
             config.imagePlacement = .trailing
             config.imagePadding = 8
             
-            let titleText = selectedGroup?.name ?? "Select Group" // Fallback text
+            let titleText = selectedGroup?.name ?? "Create Group" // Fallback text
             
             let attributedTitle = AttributedString(
                 titleText,
