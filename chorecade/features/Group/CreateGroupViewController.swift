@@ -184,31 +184,69 @@ class CreateGroupViewController: UIViewController {
     
     private func loadGroupsAndUsersForCurrentUser() {
 
-        guard let currentUserID = Repository.userRecordID?.recordName else {
-                print("currentUserID NIL!");
-                return
-            }
-        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
-            self?.groupRecords = groups
-            self?.groupNames = groups.compactMap { $0["name"] as? String }
-            self?.usersByGroup = Array(repeating: [], count: groups.count)
-            let total = groups.count
-            var fetched = 0
-
-            for (i, group) in groups.enumerated() {
-                Repository.fetchUsersForGroup(groupRecordID: group.recordID) { users in
-                    self?.usersByGroup[i] = users
-                    fetched += 1
-                    if fetched == total {
-                        DispatchQueue.main.async {
-                            self?.updateLayout()
-                            self?.loadingOverlay?.hide()
-                            self?.loadingOverlay = nil
-                        }
-                    }
-                }
+//        guard let currentUserID = Repository.userRecordID?.recordName else {
+//                print("currentUserID NIL!");
+//                return
+//            }
+        
+        guard let currentUserRecord = Repository.currentUserRecord else {
+            print("currentUserRecord NIL!");
+            return
+        }
+        
+        guard let groupCodes = currentUserRecord["groupCode"] as? [String] else {
+            print("No groupCodes")
+            return
+        }
+        
+        let groupModels = groupCodes.compactMap {
+            Repository.groupModelsByCode[$0]
+        }
+        
+        let groupRecords = groupCodes.compactMap {
+            Repository.groupRecordsByCode[$0]
+        }
+        
+        let groupNames = groupRecords.map {
+            $0["name"] as? String ?? ""
+        }
+        
+        let usersByGroup = groupModels.map {
+            $0.users.compactMap {
+                Repository.usersRecordsByID[$0.recordID.recordName]
             }
         }
+        
+        self.groupRecords = groupRecords
+        self.groupNames = groupNames
+        self.usersByGroup = usersByGroup
+        
+        print("Group records: \(groupRecords)")
+        print("Group names: \(groupNames)")
+        print("Users by group: \(usersByGroup)")
+        
+        
+//        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
+//            self?.groupRecords = groups
+//            self?.groupNames = groups.compactMap { $0["name"] as? String }
+//            self?.usersByGroup = Array(repeating: [], count: groups.count)
+//            let total = groups.count
+//            var fetched = 0
+//
+//            for (i, group) in groups.enumerated() {
+//                Repository.fetchUsersForGroup(groupRecordID: group.recordID) { users in
+//                    self?.usersByGroup[i] = users
+//                    fetched += 1
+//                    if fetched == total {
+//                        DispatchQueue.main.async {
+//                            self?.updateLayout()
+//                            self?.loadingOverlay?.hide()
+//                            self?.loadingOverlay = nil
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {

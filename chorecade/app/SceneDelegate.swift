@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let window = UIWindow(windowScene: windowScene)
             window.overrideUserInterfaceStyle = .light
             
-            if let userRecord = Repository.userRecord{
+            if let userRecord = Repository.currentUserRecord {
                 
                 if userRecord["nickname"] is String {
                     
