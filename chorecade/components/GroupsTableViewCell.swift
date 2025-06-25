@@ -37,6 +37,7 @@ class GroupsTableViewCell: UITableViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
+        imageView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         return imageView
     }()
     
@@ -62,14 +63,16 @@ class GroupsTableViewCell: UITableViewCell {
     
     lazy var groupPointsSatckView: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [groupPointsLabel, pointsStack])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.distribution = .fill
+//        stackView.distribution = .fill
         
         pointsStack.heightAnchor.constraint(equalToConstant: 26).isActive = true
         
-        stackView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        stackView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         stackView.alignment = .center
+        stackView.spacing = 8
+        stackView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+
         return stackView
     }()
     
@@ -77,38 +80,39 @@ class GroupsTableViewCell: UITableViewCell {
     
     lazy var userImagesStackView: UIStackView = {
         let stack = UIStackView()
-        stack.axis = .horizontal
         stack.spacing = -15
-        stack.alignment = .center
         return stack
     }()
     
     // Popula o stack com imagens dos usuários
     func configure(with users: [User]) {
         userImagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
         for user in users {
             let image = user.profilePicture ?? UIImage(named: "defaultImage")
             let imageView = UIImageView(image: image)
             imageView.contentMode = .scaleAspectFill
-            imageView.layer.cornerRadius = 21
+            imageView.layer.cornerRadius = 18
             imageView.clipsToBounds = true
             imageView.layer.borderWidth = 2
             imageView.layer.borderColor = UIColor.white.cgColor
             imageView.translatesAutoresizingMaskIntoConstraints = false
-            imageView.widthAnchor.constraint(equalToConstant: 42).isActive = true
-            imageView.heightAnchor.constraint(equalToConstant: 42).isActive = true
+            imageView.widthAnchor.constraint(equalToConstant: 36).isActive = true
+            imageView.heightAnchor.constraint(equalToConstant: 36).isActive = true
             userImagesStackView.addArrangedSubview(imageView)
+           
         }
+        
     }
 
     lazy var groupStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [groupTitleLabel, userImagesStackView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.spacing = 8
+//        stackView.distribution = .equalSpacing
+//        stackView.spacing = 8
+        stackView.alignment = .leading
         
-        stackView.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        stackView.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         
         return stackView
     }()
@@ -116,9 +120,9 @@ class GroupsTableViewCell: UITableViewCell {
     lazy var mainsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [groupStack, groupPointsSatckView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.distribution = .fill
-        stackView.spacing = 38
+//        stackView.axis = .horizontal
+//        stackView.distribution = .fill
+//        stackView.spacing = 38
     
         return stackView
     }()
@@ -126,7 +130,7 @@ class GroupsTableViewCell: UITableViewCell {
     // Cell Stack
     
     lazy var cellStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [groupImage, mainsStack])
+        let stackView = UIStackView(arrangedSubviews: [groupImage, groupStack, groupPointsSatckView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
         stackView.spacing = 16
@@ -166,19 +170,33 @@ class GroupsTableViewCell: UITableViewCell {
 
 extension GroupsTableViewCell: ViewCodeProtocol {
     func addSubviews() {
-        contentView.addSubview(cellStack)
+        contentView.backgroundColor = UIColor.selectionPurple
+        contentView.layer.cornerRadius = 16
+        contentView.addSubview(groupImage)
+        contentView.addSubview(groupStack)
+        contentView.addSubview(groupPointsSatckView)
+//        contentView.addSubview(main)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
             
-            cellStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            cellStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            cellStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            cellStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            
+            groupImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
+            groupImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            groupImage.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
             groupImage.widthAnchor.constraint(equalToConstant: 75),
-            groupImage.heightAnchor.constraint(equalToConstant: 76)
+            groupImage.heightAnchor.constraint(equalToConstant: 76),
+            
+            
+            groupStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
+            groupStack.leadingAnchor.constraint(equalTo: groupImage.trailingAnchor, constant: 16),
+            groupStack.trailingAnchor.constraint(equalTo: groupPointsSatckView.leadingAnchor, constant: -16),
+            
+            
+            groupPointsSatckView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
+            groupPointsSatckView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            groupPointsSatckView.widthAnchor.constraint(equalToConstant: 76),
+            
         ])
     }
 }
