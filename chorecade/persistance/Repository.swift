@@ -53,6 +53,27 @@ struct Repository {
 }
 
 extension Repository {
+    
+    // MARK: Add points to current user
+    static func addPointsToCurrentUser(_ points: Int) async {
+        
+        guard var userRecord = Repository.userRecord else {
+            print("Couldn't fetch current user record")
+            return
+        }
+        
+        var currentPoints: Int = userRecord["points"] as? Int ?? 0
+        currentPoints += points
+        userRecord["points"] = currentPoints
+        
+        CKContainer.default().publicCloudDatabase.save(userRecord) {
+            _, error in
+            if let error = error {
+                print("Error saving record: \(error)")
+            }
+        }
+    }
+    
     // MARK: Fetch record by ID
     static private func fetchRecordBy(id: CKRecord.ID) async -> CKRecord? {
         await withCheckedContinuation { continuation in
@@ -111,10 +132,27 @@ extension Repository {
         let groupCodes = record["groupCode"] as? [String] ?? []
         let nickname = record["nickname"] as? String ?? "No nickname"
         let recordID = record.recordID
+        var avatarHead: UIImage? = nil
+        var avatar: UIImage? = nil
+        let points = record["points"] as? Int ?? 0
+        
+        if let avatarHeadAsset = record["avatarHead"] as? CKAsset,
+           let imageData = try? Data(contentsOf: avatarHeadAsset.fileURL!) {
+            avatarHead = UIImage(data: imageData)
+        }
+        
+        if let avatarAsset = record["avatar"] as? CKAsset,
+           let imageData = try? Data(contentsOf: avatarAsset.fileURL!) {
+            avatar = UIImage(data: imageData)
+        }
+        
         return User(
             groupCodes: groupCodes,
             nickname: nickname,
-            recordID: recordID
+            points: points,
+            recordID: recordID,
+            avatar: avatar,
+            avatarHead: avatarHead,
         )
     }
     
@@ -128,6 +166,7 @@ extension Repository {
         return User(
             groupCodes: [],
             nickname: "Default NickName",
+            points: 0,
             recordID: recordID
         )
     }
@@ -244,25 +283,18 @@ extension Repository {
         }
     }
     
-    // MARK: Fetches every group a user is in
-    static func fetchGroupsForUser(
-        userID: String,
-        completion: @escaping ([CKRecord]) -> Void
-    ) {
+    // MARK: Fetches every group a user is in (async version)
+    static func fetchGroupsForUser(userID: String) async throws -> [CKRecord] {
         let predicate = NSPredicate(format: "ANY members == %@", userID)
         let query = CKQuery(recordType: "Group", predicate: predicate)
-        CKContainer.default().publicCloudDatabase.perform(
-            query,
-            inZoneWith: nil
-        ) { records, error in
-            DispatchQueue.main.async {
-                if let records = records {
-                    completion(records)
+        let publicDB = CKContainer.default().publicCloudDatabase
+
+        return try await withCheckedThrowingContinuation { continuation in
+            publicDB.perform(query, inZoneWith: nil) { records, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
                 } else {
-                    print(
-                        "Erro ao buscar grupos: \(error?.localizedDescription ?? "Desconhecido")"
-                    )
-                    completion([])
+                    continuation.resume(returning: records ?? [])
                 }
             }
         }
@@ -419,6 +451,50 @@ extension Repository {
         }
     }
     
+    // MARK: addAvatar
+    static func addUserAvatar(avatar: UIImage, avatarHead: UIImage, completion: ((Bool) -> Void)? = nil) {
+        guard let userRecordID = userRecordID else {
+            print("userRecordID não disponível")
+            completion?(false)
+            return
+        }
+        
+        // Busca o registro atual do usuário
+        CKContainer.default().publicCloudDatabase.fetch(withRecordID: userRecordID) { record, error in
+            if let error = error {
+                print("Erro ao buscar registro do usuário: \(error.localizedDescription)")
+                completion?(false)
+                return
+            }
+            
+            guard let record = record else {
+                print("Registro do usuário não encontrado.")
+                completion?(false)
+                return
+            }
+            
+            // Atualiza o avatar no registro usando CKAsset
+            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.jpg") {
+                record["avatar"] = CKAsset(fileURL: avatarURL)
+            }
+
+            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.jpg") {
+                record["avatarHead"] = CKAsset(fileURL: avatarHeadURL)
+            }
+            
+            // Salva a alteração no banco
+            CKContainer.default().publicCloudDatabase.save(record) { savedRecord, saveError in
+                if let saveError = saveError {
+                    print("Erro ao salvar avatar: \(saveError.localizedDescription)")
+                    completion?(false)
+                    return
+                }
+                
+                print("Avatar atualizado com sucesso.")
+                completion?(true)
+            }
+        }
+    }
     
     static func getTasksForCurrentGroup() -> [Tasks]
     {

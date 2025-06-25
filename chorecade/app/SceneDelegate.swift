@@ -25,7 +25,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                     window.rootViewController = tabBarController
                     
                 } else {
-                    let tabBarController = UserDataViewController()
+                    let tabBarController = CreateAvatarViewController()
                     window.rootViewController = tabBarController
                 }
                 

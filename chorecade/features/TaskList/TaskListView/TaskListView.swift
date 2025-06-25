@@ -84,7 +84,6 @@ class TaskListView: UIView {
     // MARK: - Closure
     var onAddTaskButtonTaped: (() -> Void)?
     var onTaskSelected: ((Tasks) -> Void)?
-
     
     
     // MARK: - Functions
@@ -96,6 +95,7 @@ class TaskListView: UIView {
         
         self.currentSelectedGroup = groupSelector.selectedGroup
         self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
+        
     }
     
     required init?(coder: NSCoder) {
