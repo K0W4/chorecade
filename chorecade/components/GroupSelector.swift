@@ -54,9 +54,10 @@ class GroupSelector: UIView {
                 print("currentUserID NIL!");
                 return
             }
-        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
-            self?.groupRecords = groups
-            self?.processGroupRecords()
+        
+        Task {
+            self.groupRecords = await try Repository.fetchGroupsForUser(userID: currentUserID)
+            self.processGroupRecords()
         }
     }
     

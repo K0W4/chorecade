@@ -53,6 +53,27 @@ struct Repository {
 }
 
 extension Repository {
+    
+    // MARK: Add points to current user
+    static func addPointsToCurrentUser(_ points: Int) async {
+        
+        guard var userRecord = Repository.userRecord else {
+            print("Couldn't fetch current user record")
+            return
+        }
+        
+        var currentPoints: Int = userRecord["points"] as? Int ?? 0
+        currentPoints += points
+        userRecord["points"] = currentPoints
+        
+        CKContainer.default().publicCloudDatabase.save(userRecord) {
+            _, error in
+            if let error = error {
+                print("Error saving record: \(error)")
+            }
+        }
+    }
+    
     // MARK: Fetch record by ID
     static private func fetchRecordBy(id: CKRecord.ID) async -> CKRecord? {
         await withCheckedContinuation { continuation in
@@ -111,9 +132,11 @@ extension Repository {
         let groupCodes = record["groupCode"] as? [String] ?? []
         let nickname = record["nickname"] as? String ?? "No nickname"
         let recordID = record.recordID
+        let points = record["points"] as? Int ?? 0
         return User(
             groupCodes: groupCodes,
             nickname: nickname,
+            points: points,
             recordID: recordID
         )
     }
@@ -128,6 +151,7 @@ extension Repository {
         return User(
             groupCodes: [],
             nickname: "Default NickName",
+            points: 0,
             recordID: recordID
         )
     }
@@ -244,25 +268,18 @@ extension Repository {
         }
     }
     
-    // MARK: Fetches every group a user is in
-    static func fetchGroupsForUser(
-        userID: String,
-        completion: @escaping ([CKRecord]) -> Void
-    ) {
+    // MARK: Fetches every group a user is in (async version)
+    static func fetchGroupsForUser(userID: String) async throws -> [CKRecord] {
         let predicate = NSPredicate(format: "ANY members == %@", userID)
         let query = CKQuery(recordType: "Group", predicate: predicate)
-        CKContainer.default().publicCloudDatabase.perform(
-            query,
-            inZoneWith: nil
-        ) { records, error in
-            DispatchQueue.main.async {
-                if let records = records {
-                    completion(records)
+        let publicDB = CKContainer.default().publicCloudDatabase
+
+        return try await withCheckedThrowingContinuation { continuation in
+            publicDB.perform(query, inZoneWith: nil) { records, error in
+                if let error = error {
+                    continuation.resume(throwing: error)
                 } else {
-                    print(
-                        "Erro ao buscar grupos: \(error?.localizedDescription ?? "Desconhecido")"
-                    )
-                    completion([])
+                    continuation.resume(returning: records ?? [])
                 }
             }
         }
