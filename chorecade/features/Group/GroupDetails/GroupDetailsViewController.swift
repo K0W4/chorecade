@@ -70,14 +70,15 @@ class GroupDetailsViewController: UIViewController {
         return stackView
     }()
     
-//    lazy var usersTableView: UITableView = {
-//        let tableView = UITableView()
-//        tableView.translatesAutoresizingMaskIntoConstraints = false
-//        tableView.register(UserTableViewCell.self, forCellReuseIdentifier: UserTableViewCell.reuseIdentifier)
-//        tableView.delegate = self
-//        tableView.dataSource = self
-//        tableView.separatorStyle = .none
-//    }()
+    lazy var usersTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(GroupDetailsTableViewCell.self, forCellReuseIdentifier: GroupDetailsTableViewCell.reuseIdentifier)
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.separatorStyle = .none
+        return tableView
+    }()
     
     // MARK: Override ViewDidLoad
     override func viewDidLoad() {
@@ -107,7 +108,30 @@ extension GroupDetailsViewController: ViewCodeProtocol {
         ])
     }
 }
-//
-//extension GroupDetailsViewController: UITableViewDelegate, UITableViewDataSource {
-//    
-//}
+
+extension GroupDetailsViewController: UITableViewDataSource {
+    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupDetailsTableViewCell", for: indexPath) as? GroupDetailsTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        return cell
+    }
+}
+
+extension GroupDetailsViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return 100
+    }
+    
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }
+}
+
