@@ -16,6 +16,11 @@ extension RankingView: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "empty-list-cell", for: indexPath) as? EmptyTableViewCell else {
+                        return UITableViewCell()
+                    }
+        
+        
 //        if tasksByGroup.isEmpty {
 //            guard let cell = tableView.dequeueReusableCell(withIdentifier: "empty-list-cell", for: indexPath) as? EmptyTableViewCell else {
 //                return UITableViewCell()
@@ -44,11 +49,7 @@ extension RankingView: UITableViewDataSource {
 //        print("userRecord: \(userRecord)")
 //        print("nickname field: \(userRecord["nickname"] ?? "not found")")
         
-        cell.taskTitleLabel.text = task.category.title
-        cell.taskDescriptionLabel.text = task.description
-        cell.taskPointsLabel.text = "+\(task.category.points) points"
-        cell.nameUserLabel.text = userName
-        cell.taskImage.image = task.beforeImage
+        
         return cell
     }
 }

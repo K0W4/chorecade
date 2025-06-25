@@ -10,7 +10,7 @@ import UIKit
 class RankingView: UIView {
     // MARK: Variables
     var currentSelectedGroup: Group?
-    var tasksByGroup: [Tasks] = []
+    var usersByGroup: [User] = []
     
     // MARK: Components
     lazy var scrollView: UIScrollView = {
@@ -38,6 +38,7 @@ class RankingView: UIView {
     }()
     // MARK: - Verificar <------------------------------------------------------------------------
     
+    
     lazy var shareRankingButton: UIButton = {
         let button = UIButton(configuration: .filled(), primaryAction: nil)
         var config = UIButton.Configuration.filled()
@@ -45,7 +46,7 @@ class RankingView: UIView {
         config.baseForegroundColor = .black
         config.title = "Share Ranking"
         config.attributedTitle = AttributedString("Share Ranking", attributes: AttributeContainer([
-            .font: UIFont(name: "Jersey10-Regular", size: 16)!
+            .font: Fonts.points!
         ]))
         config.image = UIImage(systemName: "square.and.arrow.up")
         config.imagePadding = 8
@@ -61,10 +62,6 @@ class RankingView: UIView {
     
     lazy var firstPointsLabel = Components.getLabel(content: "60 points", font: Fonts.points, alignment: .center)
     
-    lazy var secondPointsLabel = Components.getLabel(content: "24 points", font: Fonts.points, alignment: .center)
-
-    lazy var thirdPointsLabel = Components.getLabel(content: "10 points", font: Fonts.points, alignment: .center)
-
     lazy var firstPointsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [firstPointsLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -74,6 +71,8 @@ class RankingView: UIView {
         return stackView
     }()
     
+    lazy var secondPointsLabel = Components.getLabel(content: "24 points", font: Fonts.points, alignment: .center)
+     
     lazy var secondPointsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [secondPointsLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -82,7 +81,10 @@ class RankingView: UIView {
         stackView.layer.cornerRadius = 16
         return stackView
     }()
-    
+     
+    lazy var thirdPointsLabel = Components.getLabel(content: "10 points", font: Fonts.points, alignment: .center)
+
+   
     lazy var thirdPointsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [thirdPointsLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -177,7 +179,7 @@ class RankingView: UIView {
     lazy var rankingTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(TaskListTableViewCell.self, forCellReuseIdentifier: "ranking-cell")
+        tableView.register(RankingTableViewCell.self, forCellReuseIdentifier: RankingTableViewCell.reuseIdentifier)
         tableView.dataSource = self
         tableView.delegate = self
         tableView.backgroundColor = .primaryPurple100
@@ -186,10 +188,6 @@ class RankingView: UIView {
         tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         return tableView
     }()
-
-    // MARK: - Closure
-    var onAddTaskButtonTaped: (() -> Void)?
-    var onTaskSelected: ((Tasks) -> Void)?
 
     // MARK: - Functions
     override init(frame: CGRect) {
@@ -208,10 +206,6 @@ class RankingView: UIView {
 }
 
 extension RankingView: ViewCodeProtocol {
-    func setup() {
-        addSubviews()
-        setupConstraints()
-    }
 
     func addSubviews() {
         addSubview(scrollView)
@@ -222,7 +216,7 @@ extension RankingView: ViewCodeProtocol {
         contentView.addSubview(secondUserStack)
         contentView.addSubview(thirdUserStack)
         contentView.addSubview(podiumImage)
-        contentView.addSubview(rankingTableView)
+//        contentView.addSubview(rankingTableView)
     }
 
     func setupConstraints() {
@@ -278,9 +272,9 @@ extension RankingView: ViewCodeProtocol {
             podiumImage.topAnchor.constraint(equalTo: firstUserStack.bottomAnchor, constant: -30),
             podiumImage.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
             
-            rankingTableView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor, constant: 20),
-            rankingTableView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
-            rankingTableView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16)
+//            rankingTableView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor, constant: 20),
+//            rankingTableView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
+//            rankingTableView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16)
         ])
     }
 }
