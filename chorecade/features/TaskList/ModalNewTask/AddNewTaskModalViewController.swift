@@ -206,6 +206,7 @@ class AddNewTaskModalViewController: UIViewController {
             
             if let currentUserID = Repository.userRecordID {
                 do {
+                    
                     try await Repository.addTask(
                         toGroupWithCode: group.groupCode,
                         category: category.id,
@@ -215,6 +216,8 @@ class AddNewTaskModalViewController: UIViewController {
                         photoBefore: beforeImage,
                         photoAfter: afterImage
                     )
+                    
+                    await Repository.addPointsToCurrentUser(category.points)
                 } catch {
                     print("Error")
                 }
