@@ -119,6 +119,7 @@ class CreateGroupViewController: UIViewController {
                         message: "You need to be logged in to iCloud to continue.",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                         exit(0)
                     })
@@ -132,6 +133,7 @@ class CreateGroupViewController: UIViewController {
                             message: "You need to allow this app to access your iCloud to continue.",
                             preferredStyle: .alert
                         )
+                        alert.view.tintColor = UIColor.primaryPurple300
                         alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                             exit(0)
                         })

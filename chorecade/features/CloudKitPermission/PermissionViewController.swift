@@ -30,6 +30,7 @@ class PermissionViewController: UIViewController {
                         message: "You need to be logged in to iCloud to continue.",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                         exit(0)
                     })

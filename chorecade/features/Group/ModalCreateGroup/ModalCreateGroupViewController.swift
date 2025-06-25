@@ -330,6 +330,7 @@ class ModalCreateGroupViewController: UIViewController {
                         message: "Failed to create group: \(error.localizedDescription)",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self.present(alert, animated: true)
                 }

@@ -11,7 +11,18 @@ import CloudKit
 
 class UserDataViewController: UIViewController {
     
+    var avatarImage: UIImage?
+    
     // MARK: - Components
+    
+    lazy var avatarImageView: UIImageView = {
+        var imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
+    
+    
     private lazy var titleLabel: UILabel = {
         var label = UILabel()
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -22,7 +33,12 @@ class UserDataViewController: UIViewController {
         return label
     }()
     
-    private lazy var createGroupButton = Components.getButton(content: " Save Data + ", action: #selector(handleSaveButton), font: UIFont(name: "Jersey10-Regular", size: 24))
+    private lazy var doneButton = Components.getButton(
+        content: "Done",
+        action: #selector(handleSaveButton),
+        font: UIFont(name: "Jersey10-Regular", size: 24),
+        size: 40
+    )
     
     
     private lazy var nicknameLabel: UILabel = {
@@ -30,7 +46,7 @@ class UserDataViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = UIFont(name: "Jersey10-Regular", size: 20)
         label.textAlignment = .center
-        label.text = "Your nickname:"
+        label.text = "Nickname"
         label.textColor = .black
         return label
     }()
@@ -43,17 +59,26 @@ class UserDataViewController: UIViewController {
     }()
     
     lazy var textFieldStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [nicknameLabel, nicknameTextField, createGroupButton])
+        let stackView = UIStackView(arrangedSubviews: [nicknameLabel, nicknameTextField, doneButton])
         stackView.axis = .vertical
         stackView.alignment = .leading
         stackView.distribution = .fill
         stackView.spacing = 8
         stackView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-           
+            
         ])
         return stackView
     }()
+    
+    init(avatarImage: UIImage?) {
+        self.avatarImage = avatarImage
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
     
     // MARK: Functions
     override func viewDidLoad() {
@@ -67,6 +92,8 @@ class UserDataViewController: UIViewController {
         )
         view.addGestureRecognizer(tapDismissKeyboard)
         
+        avatarImageView.image = avatarImage
+        
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
             DispatchQueue.main.async {
@@ -76,6 +103,7 @@ class UserDataViewController: UIViewController {
                         message: "You need to be logged in to iCloud to continue.",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                         exit(0)
                     })
@@ -89,6 +117,7 @@ class UserDataViewController: UIViewController {
                             message: "You need to allow this app to access your iCloud to continue.",
                             preferredStyle: .alert
                         )
+                        alert.view.tintColor = UIColor.primaryPurple300
                         alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                             exit(0)
                         })
@@ -97,7 +126,7 @@ class UserDataViewController: UIViewController {
                         // Só busca userID e carrega grupos se permissão concedida!
                         Task {
                             let recordID = await Repository.fetchiCloudUserRecordID()
-                            if let recordID = recordID {
+                            if recordID != nil {
                                 self.setup()
                             } else {
                                 print("Erro: não conseguiu obter o userRecordID")
@@ -125,7 +154,8 @@ class UserDataViewController: UIViewController {
             DispatchQueue.main.async {
                 if sucesso {
                     // Exemplo: feedback visual ou navegação
-                    let alert = UIAlertController(title: "Success", message: "Nickname saved!", preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Success", message: "Avatar created, welcome!", preferredStyle: .alert)
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
                         // Troca a root para o TabBarController ao clicar em OK
                         if let sceneDelegate = UIApplication.shared.connectedScenes
@@ -136,6 +166,7 @@ class UserDataViewController: UIViewController {
                     self.present(alert, animated: true)
                 } else {
                     let alert = UIAlertController(title: "Error", message: "Could not save the nickname.", preferredStyle: .alert)
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "OK", style: .default))
                     self.present(alert, animated: true)
                 }
@@ -160,8 +191,9 @@ class UserDataViewController: UIViewController {
 extension UserDataViewController: ViewCodeProtocol {
     func addSubviews() {
         view.addSubview(titleLabel)
+        view.addSubview(avatarImageView)
         view.addSubview(textFieldStackView)
-        view.addSubview(createGroupButton)
+        view.addSubview(doneButton)
     }
     
     func setupConstraints() {
@@ -173,13 +205,18 @@ extension UserDataViewController: ViewCodeProtocol {
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            textFieldStackView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 40),
+            avatarImageView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 24),
+            avatarImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            avatarImageView.widthAnchor.constraint(equalToConstant: 200),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 260),
+            
+            textFieldStackView.topAnchor.constraint(equalTo: avatarImageView.bottomAnchor, constant: 40),
             textFieldStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             textFieldStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            createGroupButton.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 20),
-            createGroupButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            createGroupButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            doneButton.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor, constant: 20),
+            doneButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
+            doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
         ])
     }
 }
