@@ -110,7 +110,6 @@ class CreateGroupViewController: UIViewController {
         )
         view.addGestureRecognizer(tapDismissKeyboard)
         
-            
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
             DispatchQueue.main.async {
@@ -157,6 +156,15 @@ class CreateGroupViewController: UIViewController {
                     }
                 }
             }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateLayout()
+        
+        Task {
+            await loadGroupsAndUsersForCurrentUser()
         }
     }
     
@@ -212,6 +220,7 @@ class CreateGroupViewController: UIViewController {
                     }
                 }
                 
+                groupsTableView.reloadData()
                 self.updateLayout()
                 self.loadingOverlay?.hide()
                 self.loadingOverlay = nil

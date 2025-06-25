@@ -97,9 +97,6 @@ class TaskListView: UIView {
         // Initialize currentSelectedGroup from groupSelector
         self.currentSelectedGroup = groupSelector.selectedGroup
         self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
-        
-       
-        
     }
     
     
