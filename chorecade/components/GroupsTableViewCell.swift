@@ -95,8 +95,8 @@ class GroupsTableViewCell: UITableViewCell {
             imageView.layer.borderWidth = 2
             imageView.layer.borderColor = UIColor.white.cgColor
             imageView.translatesAutoresizingMaskIntoConstraints = false
-            imageView.widthAnchor.constraint(equalToConstant: 35).isActive = true
-            imageView.heightAnchor.constraint(equalToConstant: 35).isActive = true
+            imageView.widthAnchor.constraint(equalToConstant: 42).isActive = true
+            imageView.heightAnchor.constraint(equalToConstant: 42).isActive = true
             userImagesStackView.addArrangedSubview(imageView)
         }
     }

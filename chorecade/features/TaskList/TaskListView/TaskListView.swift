@@ -119,7 +119,8 @@ class TaskListView: UIView {
             do {
                 let updatedTasks = try await Repository.fetchTasksForGroup(selectedGroup.id)
                 DispatchQueue.main.async {
-                    self.tasksByGroup = updatedTasks.map { Repository.createTaskModel(byRecord: $0) }
+                    self.tasksByGroup = updatedTasks.map { Repository.createTaskModel(byRecord: $0)
+                    }
                     self.tasksTableView.reloadData()
                     self.loadingOverlay?.hide()
                     self.loadingOverlay = nil
