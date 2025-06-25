@@ -36,22 +36,22 @@ extension TaskListView: UITableViewDataSource {
         }
         
         let task = tasksByGroup[indexPath.row]
-        
-        guard let userRecord = Repository.userRecord else {
-            print("No user record found")
-            return cell
-        }
-        
-        let userName = userRecord["nickname"] as? String ?? "Default nickname"
-        
-        print("userRecord: \(userRecord)")
-        print("nickname field: \(userRecord["nickname"] ?? "not found")")
-        
+
         cell.taskTitleLabel.text = task.category.title
         cell.taskDescriptionLabel.text = task.description
         cell.taskPointsLabel.text = "+\(task.category.points) points"
-        cell.nameUserLabel.text = userName
         cell.taskImage.image = task.beforeImage
+        cell.nameUserLabel.text = "..." // placeholder while loading
+
+        Task {
+            let user = await Repository.createUserModel(byRecordID: task.user)
+            
+            // To prevent race condition with reused cells
+            if tableView.indexPath(for: cell) == indexPath {
+                cell.nameUserLabel.text = user.nickname
+            }
+        }
+        
         return cell
     }
     

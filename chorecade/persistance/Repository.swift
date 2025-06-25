@@ -138,7 +138,7 @@ extension Repository {
         let categoryID = record["category"] as? Int ?? 1
         let category = CategoriesList.allCategories[categoryID - 1]
         let description = record["description"] as? String ?? ""
-        let user = userRecordID
+        let user = record["userId"] as? String ?? ""
         let group = record["group"] as? String ?? ""
         var beforeImage: UIImage? = nil
         var afterImage: UIImage? = nil
@@ -153,15 +153,11 @@ extension Repository {
             afterImage = UIImage(data: imageData)
         }
         
-        guard let userId = userRecordID else {
-            print("Erro de id de usuario")
-            return Tasks(category: category, description: description, user: CKRecord.ID(), group: group, beforeImage: nil, afterImage: nil)
-        }
         
         return Tasks(
             category: category,
             description: description,
-            user: userId,
+            user: CKRecord.ID(recordName: user),
             group: group,
             beforeImage: beforeImage,
             afterImage: afterImage
@@ -323,7 +319,7 @@ extension Repository {
         taskRecord["category"] = category as NSNumber
         taskRecord["description"] = description as NSString
         taskRecord["points"] = points as NSNumber
-        taskRecord["userId"] = String(describing: userId) as NSString
+        taskRecord["userId"] = userId.recordName as NSString
         taskRecord["groupCode"] = groupCode as NSString
         taskRecord["groupRef"] = CKRecord.Reference(
             recordID: groupRecord.recordID,
