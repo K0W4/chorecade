@@ -429,6 +429,8 @@ extension CreateGroupViewController: UITableViewDataSource {
         cell.configure(with: group.users)
         cell.groupTitleLabel.text = group.name
         
+        cell.setBGColor(group.color)
+        
         let totalPoints = group.users.map { $0.points }.reduce(0, +)
         
         cell.groupPointsInternalLabel.text = "\(totalPoints) pts"
