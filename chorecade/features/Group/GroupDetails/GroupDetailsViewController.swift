@@ -13,6 +13,7 @@ class GroupDetailsViewController: UIViewController {
     // MARK: Variables
     var groupModel: Group?
     var members: [(id: String, nickname: String, image: UIImage?)] = []
+    var isCurrentUserCreator: Bool = false
     
     // MARK: Components
     private lazy var headerView: ModalHeader = {
@@ -194,6 +195,27 @@ class GroupDetailsViewController: UIViewController {
                 groupImage.image = image
             }
 
+            // Verifica se o usuário atual é o criador do grupo
+            if let createdByID = group.createdBy {
+                CKContainer.default().fetchUserRecordID { currentUserID, error in
+                    guard let currentUserID = currentUserID, error == nil else {
+                        print("Erro ao buscar o ID do usuário atual: \(error?.localizedDescription ?? "Desconhecido")")
+                        return
+                    }
+
+                    self.isCurrentUserCreator = (currentUserID.recordName == createdByID.recordName)
+                    print("Meu recordName: \(currentUserID.recordName)")
+                    print("Criador do grupo: \(createdByID.recordName)")
+                    print("É criadora? \(self.isCurrentUserCreator)")
+                    DispatchQueue.main.async {
+                        self.editPrizeButton.isHidden = !self.isCurrentUserCreator
+                        self.usersTableView.reloadData()
+                    }
+                }
+            } else {
+                self.editPrizeButton.isHidden = true
+            }
+
             loadMembers(for: group)
         }
     }
@@ -353,6 +375,7 @@ extension GroupDetailsViewController: UITableViewDataSource {
         let member = members[indexPath.row]
         cell.userLabel.text = member.nickname
         cell.userImage.image = member.image
+        cell.deleteButton.isHidden = !self.isCurrentUserCreator
         cell.deleteAction = { [weak self] in
             guard let self = self,
                   let groupID = self.groupModel?.id,
