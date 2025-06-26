@@ -11,9 +11,14 @@ import UIKit
 class CreateGroupViewController: UIViewController {
     
     // MARK: Variables
-    var usersByGroup: [[CKRecord]] = []
-    var groupNames: [String] = []
-    var groupRecords: [CKRecord] = []
+//    var usersByGroup: [[CKRecord]] = []
+//    var groupNames: [String] = []
+//    var groupRecords: [CKRecord] = []
+    var groupModels: [Group] = [] {
+        didSet {
+            updateLayout()
+        }
+    }
     var loadingOverlay: LoadingOverlay?
     
     // MARK: - Components
@@ -103,7 +108,12 @@ class CreateGroupViewController: UIViewController {
         
         codeTextField.delegate = self
         
-            
+        let tapDismissKeyboard = UITapGestureRecognizer(
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        view.addGestureRecognizer(tapDismissKeyboard)
+        
         CKContainer.default().accountStatus { status, error in
             print("Account status:", status.rawValue)
             DispatchQueue.main.async {
@@ -113,6 +123,7 @@ class CreateGroupViewController: UIViewController {
                         message: "You need to be logged in to iCloud to continue.",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                         exit(0)
                     })
@@ -126,6 +137,7 @@ class CreateGroupViewController: UIViewController {
                             message: "You need to allow this app to access your iCloud to continue.",
                             preferredStyle: .alert
                         )
+                        alert.view.tintColor = UIColor.primaryPurple300
                         alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                             exit(0)
                         })
@@ -136,10 +148,13 @@ class CreateGroupViewController: UIViewController {
                             let recordID = await Repository.fetchiCloudUserRecordID()
                             if let recordID = recordID {
                                 print("User recordID carregado:", recordID.recordName)
-                                self.loadGroupsAndUsersForCurrentUser()
-                                print("group Names: \(self.groupNames)")
-                                self.updateLayout()
-                                self.setup()
+                                
+                                Task {
+                                    await self.loadGroupsAndUsersForCurrentUser()
+//                                    print("group Names: \(self.groupNames)")
+                                    self.updateLayout()
+                                    self.setup()
+                                }
                             } else {
                                 print("Erro: não conseguiu obter o userRecordID")
                             }
@@ -147,6 +162,15 @@ class CreateGroupViewController: UIViewController {
                     }
                 }
             }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        updateLayout()
+        
+        Task {
+            await loadGroupsAndUsersForCurrentUser()
         }
     }
     
@@ -182,32 +206,31 @@ class CreateGroupViewController: UIViewController {
         groupsTableView.reloadData()
     }
     
-    private func loadGroupsAndUsersForCurrentUser() {
-
+    private func loadGroupsAndUsersForCurrentUser() async {
         guard let currentUserID = Repository.userRecordID?.recordName else {
-                print("currentUserID NIL!");
-                return
-            }
-        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
-            self?.groupRecords = groups
-            self?.groupNames = groups.compactMap { $0["name"] as? String }
-            self?.usersByGroup = Array(repeating: [], count: groups.count)
-            let total = groups.count
-            var fetched = 0
+            print("currentUserID NIL!")
+            return
+        }
 
-            for (i, group) in groups.enumerated() {
-                Repository.fetchUsersForGroup(groupRecordID: group.recordID) { users in
-                    self?.usersByGroup[i] = users
-                    fetched += 1
-                    if fetched == total {
-                        DispatchQueue.main.async {
-                            self?.updateLayout()
-                            self?.loadingOverlay?.hide()
-                            self?.loadingOverlay = nil
-                        }
+        do {
+            let groupRecords = try await Repository.fetchGroupsForUser(userID: currentUserID)
+            
+            self.groupModels = try await withThrowingTaskGroup(of: Group.self) { group in
+                for record in groupRecords {
+                    group.addTask {
+                        return await Repository.createGroupModel(byRecord: record)
                     }
                 }
+                
+                groupsTableView.reloadData()
+                self.updateLayout()
+                self.loadingOverlay?.hide()
+                self.loadingOverlay = nil
+
+                return try await group.reduce(into: []) { $0.append($1) }
             }
+        } catch {
+            print("Erro carregando grupos ou usuários:", error.localizedDescription)
         }
     }
     
@@ -232,7 +255,7 @@ extension CreateGroupViewController: ViewCodeProtocol {
         view.addSubview(topStackView)
         view.addSubview(textFieldStackView)
         
-        if groupNames.isEmpty {
+        if groupModels.isEmpty {
             view.addSubview(emptyState)
         } else {
             view.addSubview(groupsTableView)
@@ -254,7 +277,7 @@ extension CreateGroupViewController: ViewCodeProtocol {
             
         ])
         
-        if groupNames.isEmpty {
+        if groupModels.isEmpty {
             NSLayoutConstraint.activate([
                 emptyState.topAnchor.constraint(equalTo: textFieldStackView.bottomAnchor),
                 emptyState.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -386,29 +409,31 @@ extension CreateGroupViewController {
     func didEnterGroup() {
         loadingOverlay = LoadingOverlay.show(on: self.view)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.loadGroupsAndUsersForCurrentUser()
+            Task {
+                await self.loadGroupsAndUsersForCurrentUser()
+            }
         }
     }
 }
 
 extension CreateGroupViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return groupNames.count
+        return groupModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupsTableViewCell", for: indexPath) as? GroupsTableViewCell else {
             return UITableViewCell()
         }
-        let users = usersByGroup[indexPath.row]
-        let groupName = groupNames[indexPath.row]
-        cell.configure(with: users)
-        cell.groupTitleLabel.text = groupName
-        let groupRecord = groupRecords[indexPath.row]
-        if let asset = groupRecord["groupImage"] as? CKAsset,
-           let fileURL = asset.fileURL,
-           let imageData = try? Data(contentsOf: fileURL),
-           let image = UIImage(data: imageData) {
+        let group = groupModels[indexPath.row]
+        cell.configure(with: group.users)
+        cell.groupTitleLabel.text = group.name
+        
+        let totalPoints = group.users.map { $0.points }.reduce(0, +)
+        
+        cell.groupPointsInternalLabel.text = "\(totalPoints) pts"
+        
+        if let image = group.groupImage {
             cell.groupImage.image = image
         } else {
             cell.groupImage.image = UIImage(named: "defaultImage")
@@ -475,7 +500,9 @@ extension CreateGroupViewController: ModalCreateGroupDelegate {
     func didCreateGroup() {
         loadingOverlay = LoadingOverlay.show(on: self.view)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.loadGroupsAndUsersForCurrentUser()
+            Task {
+                await self.loadGroupsAndUsersForCurrentUser()
+            }
         }
     }
 }

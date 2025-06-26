@@ -54,9 +54,10 @@ class GroupSelector: UIView {
                 print("currentUserID NIL!");
                 return
             }
-        Repository.fetchGroupsForUser(userID: currentUserID) { [weak self] groups in
-            self?.groupRecords = groups
-            self?.processGroupRecords()
+        
+        Task {
+            self.groupRecords = await try Repository.fetchGroupsForUser(userID: currentUserID)
+            self.processGroupRecords()
         }
     }
     
@@ -167,7 +168,7 @@ class GroupSelector: UIView {
             config.imagePlacement = .trailing
             config.imagePadding = 8
             
-            let titleText = selectedGroup?.name ?? "Select Group" // Fallback text
+            let titleText = selectedGroup?.name ?? "Create Group" // Fallback text
             
             let attributedTitle = AttributedString(
                 titleText,

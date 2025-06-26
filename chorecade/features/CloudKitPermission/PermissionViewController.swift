@@ -30,6 +30,7 @@ class PermissionViewController: UIViewController {
                         message: "You need to be logged in to iCloud to continue.",
                         preferredStyle: .alert
                     )
+                    alert.view.tintColor = UIColor.primaryPurple300
                     alert.addAction(UIAlertAction(title: "Close", style: .destructive) { _ in
                         exit(0)
                     })
@@ -52,7 +53,6 @@ class PermissionViewController: UIViewController {
                         })
                         self.present(alert, animated: true)
                     } else {
-                        // Só busca userID e carrega grupos se permissão concedida!
                         Task {
                             let recordID = await Repository.fetchiCloudUserRecordID()
                             if let recordID = recordID {

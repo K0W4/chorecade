@@ -17,7 +17,16 @@ class GroupsTableViewCell: UITableViewCell {
     
     // Group
     
-    lazy var groupTitleLabel = Components.getLabel(content: "", font: Fonts.titleConcludedTask, alignment: .left)
+    lazy var groupTitleLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .left
+        label.numberOfLines = 1
+        label.textColor = .label
+        label.lineBreakMode = .byTruncatingTail
+        
+        label.font = Fonts.titleConcludedTask
+        return label
+    }()
     
     lazy var groupImage: UIImageView = {
         let imageView = UIImageView()
@@ -26,6 +35,7 @@ class GroupsTableViewCell: UITableViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
+        imageView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         return imageView
     }()
     
@@ -53,13 +63,13 @@ class GroupsTableViewCell: UITableViewCell {
         let stackView = UIStackView(arrangedSubviews: [groupPointsLabel, pointsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.distribution = .fill
+        
         pointsStack.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        
         stackView.alignment = .center
-        groupPointsLabel.setContentHuggingPriority(.required, for: .horizontal)
-        pointsStack.setContentHuggingPriority(.required, for: .horizontal)
-        stackView.setContentHuggingPriority(.required, for: .horizontal)
-        stackView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        stackView.spacing = 8
+        stackView.setContentHuggingPriority(.defaultHigh, for: .horizontal)
+
         return stackView
     }()
     
@@ -67,66 +77,44 @@ class GroupsTableViewCell: UITableViewCell {
     
     lazy var userImagesStackView: UIStackView = {
         let stack = UIStackView()
-        stack.axis = .horizontal
         stack.spacing = -15
-        stack.alignment = .center
-        stack.translatesAutoresizingMaskIntoConstraints = false
         return stack
     }()
     
     // Popula o stack com imagens dos usuários
-    func configure(with users: [CKRecord]) {
+    func configure(with users: [User]) {
         userImagesStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+        
         for user in users {
-            let image = Repository.getUserImage(from: user) ?? UIImage(named: "defaultImage")
+            let image = user.avatarHead ?? UIImage(named: "defaultImage")
             let imageView = UIImageView(image: image)
             imageView.contentMode = .scaleAspectFill
-            imageView.layer.cornerRadius = 21
+            imageView.layer.cornerRadius = 18
             imageView.clipsToBounds = true
             imageView.layer.borderWidth = 2
             imageView.layer.borderColor = UIColor.white.cgColor
             imageView.translatesAutoresizingMaskIntoConstraints = false
-            imageView.widthAnchor.constraint(equalToConstant: 42).isActive = true
-            imageView.heightAnchor.constraint(equalToConstant: 42).isActive = true
+            imageView.widthAnchor.constraint(equalToConstant: 36).isActive = true
+            imageView.heightAnchor.constraint(equalToConstant: 36).isActive = true
             userImagesStackView.addArrangedSubview(imageView)
+           
         }
+        
     }
 
     lazy var groupStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [groupTitleLabel, userImagesStackView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
-        stackView.distribution = .equalSpacing
-        stackView.spacing = 8
+        stackView.alignment = .leading
+        
+        
         return stackView
     }()
     
     lazy var mainsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [groupStack, groupPointsSatckView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.distribution = .fill
-        
-        stackView.spacing = 38
-        return stackView
-    }()
-    
-    // Cell Stack
-    
-    lazy var cellStack: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [groupImage, mainsStack])
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        stackView.axis = .horizontal
-        stackView.spacing = 16
-        stackView.backgroundColor = UIColor.selectionPurple
-        stackView.layer.cornerRadius = 16
-        stackView.distribution = .fill
-        stackView.layoutMargins = .init(top: 16, left: 16, bottom: 16, right: 16)
-        stackView.isLayoutMarginsRelativeArrangement = true
-        
-//        mainsStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
-//        mainsStack.setContentCompressionResistancePriority(.required, for: .horizontal)
-        
         return stackView
     }()
     
@@ -141,30 +129,52 @@ class GroupsTableViewCell: UITableViewCell {
         self.selectedBackgroundView = bgColorView
         
         groupTitleLabel.setContentHuggingPriority(.required, for: .horizontal)
-        groupTitleLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        groupTitleLabel.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
         groupTitleLabel.numberOfLines = 1
         groupTitleLabel.lineBreakMode = .byTruncatingTail
+        groupPointsSatckView.setContentHuggingPriority(.required, for: .horizontal)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0))
+    }
 }
 
 extension GroupsTableViewCell: ViewCodeProtocol {
     func addSubviews() {
-        contentView.addSubview(cellStack)
+        contentView.backgroundColor = UIColor.selectionPurple
+        contentView.layer.cornerRadius = 16
+        contentView.addSubview(groupImage)
+        contentView.addSubview(groupStack)
+        contentView.addSubview(groupPointsSatckView)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            cellStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            cellStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            cellStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            cellStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
             
+            self.heightAnchor.constraint(equalToConstant: 108),
+            
+            groupImage.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
+            groupImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            groupImage.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
             groupImage.widthAnchor.constraint(equalToConstant: 75),
-            groupImage.heightAnchor.constraint(equalToConstant: 76)
+            groupImage.heightAnchor.constraint(equalToConstant: 76),
+            
+            
+            groupStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16),
+            groupStack.leadingAnchor.constraint(equalTo: groupImage.trailingAnchor, constant: 16),
+            groupStack.trailingAnchor.constraint(equalTo: groupPointsSatckView.leadingAnchor, constant: -16),
+            
+            
+            groupPointsSatckView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -24),
+            groupPointsSatckView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            groupPointsSatckView.widthAnchor.constraint(equalToConstant: 76),
+            
         ])
     }
 }
