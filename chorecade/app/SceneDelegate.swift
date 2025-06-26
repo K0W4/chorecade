@@ -17,29 +17,23 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             let window = UIWindow(windowScene: windowScene)
             window.overrideUserInterfaceStyle = .light
             
-//            if let userRecord = Repository.userRecord{
-//                
-//                if userRecord["nickname"] is String {
-//                    
-//                    let tabBarController = TabBarController()
-//                    window.rootViewController = tabBarController
-//                    
-//                } else {
-//                    let tabBarController = UserDataViewController()
-//                    window.rootViewController = tabBarController
-//                }
-//                
-//            } else {
-//                let tabBarController = PermissionViewController()
-//                window.rootViewController = tabBarController
-//                print("Nickname não encontrado no userRecord.")
-//            }
-            
-//            let tabBarController = CreateGroupViewController()
-//            window.rootViewController = tabBarController
-            
-            let navController = UINavigationController(rootViewController: CreateGroupViewController())
-            window.rootViewController = navController
+            if let userRecord = Repository.userRecord{
+                
+                if userRecord["nickname"] is String {
+                    
+                    let tabBarController = TabBarController()
+                    window.rootViewController = tabBarController
+                    
+                } else {
+                    let tabBarController = CreateAvatarViewController()
+                    window.rootViewController = tabBarController
+                }
+                
+            } else {
+                let tabBarController = PermissionViewController()
+                window.rootViewController = tabBarController
+                print("Nickname não encontrado no userRecord.")
+            }
             
             self.window = window
             window.makeKeyAndVisible()
