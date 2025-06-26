@@ -36,7 +36,7 @@ class TaskDetailsViewController: UIViewController {
     
     lazy var authorNameLabel = Components.getLabel(content: "Julian", font: Fonts.titleConcludedTask)
     
-    lazy var dateLabel = Components.getLabel(content: "10 June 2025 at 09:41", font: Fonts.descriptionTask)
+    lazy var dateLabel = Components.getLabel(content: "", font: Fonts.descriptionTask)
     
     lazy var detailsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [authorNameLabel, dateLabel])
@@ -59,14 +59,19 @@ class TaskDetailsViewController: UIViewController {
         super.viewDidLoad()
         imagesScrollView.backgroundColor = .background
         imagesPageControl.addTarget(self, action: #selector(pageControlDidChange(_:)), for: .valueChanged)
-        configureScrollView()
         setup()
         
         if let task = task {
             taskTitleLabel.text = task.category.title
-//            authorNameLabel.text = task.user
-//            dateLabel.text = task.createDate
+            Task {
+                let user = await Repository.createUserModel(byRecordID: task.user)
+                authorNameLabel.text = user.nickname
+            }
+            
+            configureScrollView(beforeImage: task.beforeImage, afterImage: task.afterImage)
         }
+        
+        
        
     }
     
@@ -87,10 +92,18 @@ class TaskDetailsViewController: UIViewController {
         imagesScrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(current), y: 0), animated: true)
     }
     
-    func configureScrollView() {
+    func configureScrollView(beforeImage: UIImage? = nil, afterImage: UIImage? = nil) {
         imagesScrollView.contentSize = CGSize(width: view.frame.width * 2, height: view.frame.height)
         imagesScrollView.isPagingEnabled = true
-        let images: [UIImage] = [UIImage(named: "defaultImage")!, UIImage(named: "defaultImage")!]
+        var images: [UIImage] = [UIImage(named: "defaultImage")!, UIImage(named: "defaultImage")!]
+        
+        if let beforeImage = beforeImage {
+            images[0] = beforeImage
+        }
+        
+        if let afterImage = afterImage {
+            images[1] = afterImage
+        }
         
         for i in 0..<2 {
             let page = UIView(frame: CGRect(x: (view.frame.width * CGFloat(i)) + 16, y: 130, width: 360, height: 400))
