@@ -582,4 +582,48 @@ extension Repository {
             }
         }
     }
+
+
+    // MARK: - Atualiza a imagem photoAfter de uma tarefa (async)
+    static func updateTaskPhotoAfter(taskRecordID: CKRecord.ID, photoAfter: UIImage) async -> Bool {
+        let publicDB = CKContainer.default().publicCloudDatabase
+
+        do {
+            let record = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CKRecord, Error>) in
+                publicDB.fetch(withRecordID: taskRecordID) { record, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else if let record = record {
+                        continuation.resume(returning: record)
+                    } else {
+                        continuation.resume(throwing: NSError(domain: "TaskNotFound", code: 404, userInfo: nil))
+                    }
+                }
+            }
+
+            guard let afterURL = saveImageToTempDirectory(image: photoAfter, name: "after.jpg") else {
+                print("Erro ao salvar imagem temporária")
+                return false
+            }
+
+            record["photoAfter"] = CKAsset(fileURL: afterURL)
+
+            _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                publicDB.save(record) { _, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
+                }
+            }
+
+            print("Imagem 'photoAfter' atualizada com sucesso.")
+            return true
+
+        } catch {
+            print("Erro ao atualizar photoAfter: \(error.localizedDescription)")
+            return false
+        }
+    }
 }
