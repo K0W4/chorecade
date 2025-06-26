@@ -444,7 +444,7 @@ extension CreateGroupViewController: UITableViewDataSource {
 
 extension CreateGroupViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 100
+        return 1
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
@@ -474,7 +474,6 @@ extension CreateGroupViewController: UITextFieldDelegate {
         guard textField == codeTextField else { return true }
         guard let code = codeTextField.text, !code.isEmpty else { return true }
 
-//        loadingOverlay = LoadingOverlay.show(on: self.view)
         Task {
             do {
                 let group = try await joinGroupAndSaveUser(withCode: code)

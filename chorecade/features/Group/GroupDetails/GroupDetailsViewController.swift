@@ -19,9 +19,9 @@ class GroupDetailsViewController: UIViewController {
         var header = ModalHeader()
         header.translatesAutoresizingMaskIntoConstraints = false
         header.title = "Group Details"
+        header.cancelButton.setTitleColor(.background, for: .normal)
         header.addButtonAction = { [weak self] in
             self?.addButtonTapped()
-            header.cancelButton.setTitle("", for: .normal)
         }
         
         return header
@@ -138,12 +138,11 @@ class GroupDetailsViewController: UIViewController {
     }()
     
     lazy var mainStackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [groupImage, labelStackView, codeStackView])
+        let stackView = UIStackView(arrangedSubviews: [labelStackView, codeStackView])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.alignment = .center
         stackView.distribution = .fill
-        stackView.setCustomSpacing(20, after: groupImage)
         stackView.setCustomSpacing(10, after: labelStackView)
         return stackView
     }()
@@ -177,8 +176,16 @@ class GroupDetailsViewController: UIViewController {
         view.backgroundColor = .background
         setup()
         
-        usersTableView.keyboardDismissMode = .onDrag
-        
+        let appearance = UINavigationBarAppearance()
+
+        appearance.backButtonAppearance.normal.titleTextAttributes = [
+            .foregroundColor: UIColor(named: "primary-purple-300") ?? .systemPink
+        ]
+
+        navigationController?.navigationBar.tintColor = UIColor(named: "primary-purple-300")
+
+        navigationController?.navigationBar.standardAppearance = appearance
+                
         if let group = groupModel {
             groupLabel.text = group.name
             copyCodeLabel.text = " " + group.groupCode
@@ -197,7 +204,32 @@ class GroupDetailsViewController: UIViewController {
     }
     
     @objc func editLabelTapped() {
-        print("Edit label tapped")
+        let alert = UIAlertController(title: "Edit Group Name", message: nil, preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.text = self.groupLabel.text
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
+            guard let newName = alert.textFields?.first?.text,
+                  let groupID = self.groupModel?.id else { return }
+
+            self.groupLabel.text = newName
+
+            CKContainer.default().publicCloudDatabase.fetch(withRecordID: groupID) { record, error in
+                guard let record = record, error == nil else {
+                    print("Erro ao buscar grupo: \(error?.localizedDescription ?? "Desconhecido")")
+                    return
+                }
+
+                record["name"] = newName
+                CKContainer.default().publicCloudDatabase.save(record) { _, saveError in
+                    if let saveError = saveError {
+                        print("Erro ao salvar nome do grupo: \(saveError.localizedDescription)")
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
     }
     
     @objc func copyButtonTapped() {
@@ -214,8 +246,32 @@ class GroupDetailsViewController: UIViewController {
     }
     
     @objc func editPrizeTapped() {
-        print("Edit prize tapped")
+        let alert = UIAlertController(title: "Edit Prize", message: nil, preferredStyle: .alert)
+        alert.addTextField { textField in
+            textField.text = self.prizeLabel.text
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
+            guard let newPrize = alert.textFields?.first?.text,
+                  let groupID = self.groupModel?.id else { return }
 
+            self.prizeLabel.text = newPrize
+
+            CKContainer.default().publicCloudDatabase.fetch(withRecordID: groupID) { record, error in
+                guard let record = record, error == nil else {
+                    print("Erro ao buscar grupo: \(error?.localizedDescription ?? "Desconhecido")")
+                    return
+                }
+
+                record["prize"] = newPrize
+                CKContainer.default().publicCloudDatabase.save(record) { _, saveError in
+                    if let saveError = saveError {
+                        print("Erro ao salvar prêmio: \(saveError.localizedDescription)")
+                    }
+                }
+            }
+        })
+        present(alert, animated: true)
     }
     
     func updateLayout() {
@@ -237,6 +293,7 @@ class GroupDetailsViewController: UIViewController {
 extension GroupDetailsViewController: ViewCodeProtocol {
     func addSubviews() {
         view.addSubview(headerView)
+        view.addSubview(groupImage)
         view.addSubview(mainStackView)
         view.addSubview(prizeStackView)
         view.addSubview(tableViewHeader)
@@ -254,9 +311,12 @@ extension GroupDetailsViewController: ViewCodeProtocol {
             
             // Mais Stack
             
-            mainStackView.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 13),
-            mainStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 111),
-            mainStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -111),
+            groupImage.topAnchor.constraint(equalTo: headerView.bottomAnchor, constant: 13),
+            groupImage.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 111),
+            groupImage.trailingAnchor.constraint(equalTo: view.leadingAnchor, constant: -111),
+
+            mainStackView.topAnchor.constraint(equalTo: groupImage.bottomAnchor, constant: 13),
+            mainStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             groupImage.widthAnchor.constraint(equalToConstant: 171),
             groupImage.heightAnchor.constraint(equalToConstant: 173),
