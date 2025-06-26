@@ -13,12 +13,4 @@ extension RankingView: UITableViewDelegate {
         return 136
     }
     
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        
-//        let selectedTask = tasksByGroup[indexPath.row]
-//        
-//        onTaskSelected?(selectedTask)
-//       
-//        tableView.deselectRow(at: indexPath, animated: true)
-//    }
 }

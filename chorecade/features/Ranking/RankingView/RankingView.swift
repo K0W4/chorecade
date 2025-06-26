@@ -10,7 +10,16 @@ import UIKit
 class RankingView: UIView {
     // MARK: Variables
     var currentSelectedGroup: Group?
-    var usersByGroup: [User] = []
+    var usersByGroup: [User] = [] {
+            didSet {
+                let sortedUsers = usersByGroup.sorted { $0.points > $1.points }
+                
+                DispatchQueue.main.async {
+                    self.updatePodium(with: sortedUsers)
+                    self.rankingTableView.reloadData()
+                }
+            }
+        }
     
     // MARK: Components
     lazy var scrollView: UIScrollView = {
@@ -25,18 +34,32 @@ class RankingView: UIView {
         return view
     }()
     
-    // MARK: - Verificar ------------------------------------------------------------------------>
     lazy var groupSelector: GroupSelector = {
-        let groupSelector = GroupSelector()
-        groupSelector.translatesAutoresizingMaskIntoConstraints = false
+        let groupSelector = GroupSelector(style: .large)
         groupSelector.onGroupSelected = { [weak self] selectedGroup in
             guard let self = self else { return }
             self.currentSelectedGroup = selectedGroup
             Repository.currentGroup = selectedGroup
+          
+            Task {
+                var users = selectedGroup.users
+                DispatchQueue.main.async {
+                    self.usersByGroup = users
+                    self.rankingTableView.reloadData()
+                }
+            }
         }
         return groupSelector
     }()
-    // MARK: - Verificar <------------------------------------------------------------------------
+    
+    lazy var groupStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews:  [groupSelector, shareRankingButton])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.spacing = 16
+        return stackView
+    }()
     
     
     lazy var shareRankingButton: UIButton = {
@@ -60,7 +83,7 @@ class RankingView: UIView {
         return button
     }()
     
-    lazy var firstPointsLabel = Components.getLabel(content: "60 points", font: Fonts.points, alignment: .center)
+    lazy var firstPointsLabel = Components.getLabel(content: "... points", font: Fonts.points, alignment: .center)
     
     lazy var firstPointsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [firstPointsLabel])
@@ -176,6 +199,7 @@ class RankingView: UIView {
         return imageView
     }()
     
+    
     lazy var rankingTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -183,10 +207,21 @@ class RankingView: UIView {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.backgroundColor = .primaryPurple100
+        tableView.layer.cornerRadius = 16
         tableView.separatorStyle = .none
         tableView.isScrollEnabled = false
         tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         return tableView
+    }()
+    
+    lazy var tasksStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews:  [ rankingTableView])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.layer.cornerRadius = 16
+        stackView.backgroundColor = .primaryPurple100
+        stackView.spacing = 16
+        return stackView
     }()
 
     // MARK: - Functions
@@ -194,29 +229,92 @@ class RankingView: UIView {
         super.init(frame: frame)
         backgroundColor = .background
         setup()
+        
+        
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    
 
     @objc func handleShareButton() {
         print("Share tapped")
     }
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "contentSize" {
+            rankingTableView.constraints.forEach { constraint in
+                if constraint.firstAttribute == .height {
+                    rankingTableView.removeConstraint(constraint)
+                }
+            }
+            
+            let heightConstraint = rankingTableView.heightAnchor.constraint(equalToConstant: rankingTableView.contentSize.height)
+            heightConstraint.isActive = true
+            layoutIfNeeded()
+        }
+    }
+    
+    deinit {
+        rankingTableView.removeObserver(self, forKeyPath: "contentSize")
+    }
+    
+    func updatePodium(with sortedUsers: [User]) {
+           // First User (Winner)
+           if let firstUser = sortedUsers.first {
+               firstPointsLabel.text = "\(firstUser.points) points"
+               firstNameLabel.text = firstUser.nickname
+               firstUserImage.image = firstUser.avatarHead
+           } else {
+               // Reset or hide if no first user
+               firstPointsLabel.text = "... points"
+               firstNameLabel.text = "N/A"
+               firstUserImage.image = UIImage(named: "defaultImage")
+           }
+           
+           // Second User
+           if sortedUsers.count > 1 {
+               let secondUser = sortedUsers[1]
+               secondPointsLabel.text = "\(secondUser.points) points"
+               secondNameLabel.text = secondUser.nickname
+               secondUserImage.image = secondUser.avatarHead
+           } else {
+               // Reset or hide if no second user
+               secondPointsLabel.text = "0 points"
+               secondNameLabel.text = "N/A"
+               secondUserImage.image = UIImage(named: "defaultImage")
+           }
+           
+           // Third User
+           if sortedUsers.count > 2 {
+               let thirdUser = sortedUsers[2]
+               thirdPointsLabel.text = "\(thirdUser.points) points"
+               thirdNameLabel.text = thirdUser.nickname
+               thirdUserImage.image = thirdUser.avatarHead
+           } else {
+               // Reset or hide if no third user
+               thirdPointsLabel.text = "0 points"
+               thirdNameLabel.text = "N/A"
+               thirdUserImage.image = UIImage(named: "defaultImage")
+           }
+       }
+    
 }
+
 
 extension RankingView: ViewCodeProtocol {
 
     func addSubviews() {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
-        contentView.addSubview(groupSelector)
-        contentView.addSubview(shareRankingButton)
+        contentView.addSubview(groupStack)
         contentView.addSubview(firstUserStack)
         contentView.addSubview(secondUserStack)
         contentView.addSubview(thirdUserStack)
         contentView.addSubview(podiumImage)
-//        contentView.addSubview(rankingTableView)
+        contentView.addSubview(tasksStack)
     }
 
     func setupConstraints() {
@@ -226,21 +324,21 @@ extension RankingView: ViewCodeProtocol {
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
             
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
             contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
             contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             
-            groupSelector.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            groupSelector.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            groupStack.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 8),
+            groupStack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            groupSelector.widthAnchor.constraint(equalTo: contentView.widthAnchor),
             
             shareRankingButton.widthAnchor.constraint(equalToConstant: 136),
             shareRankingButton.heightAnchor.constraint(equalToConstant: 40),
-            shareRankingButton.topAnchor.constraint(equalTo: groupSelector.bottomAnchor, constant: 16),
-            shareRankingButton.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
-
-            firstUserStack.topAnchor.constraint(equalTo: shareRankingButton.bottomAnchor, constant: 20),
-            firstUserStack.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            
+            firstUserStack.topAnchor.constraint(equalTo: groupStack.bottomAnchor, constant: 20),
+            firstUserStack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             firstPointsStack.widthAnchor.constraint(equalToConstant: 70),
             firstPointsStack.heightAnchor.constraint(equalToConstant: 34),
@@ -270,11 +368,16 @@ extension RankingView: ViewCodeProtocol {
             podiumImage.widthAnchor.constraint(equalToConstant: 300),
             podiumImage.heightAnchor.constraint(equalToConstant: 275),
             podiumImage.topAnchor.constraint(equalTo: firstUserStack.bottomAnchor, constant: -30),
-            podiumImage.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            podiumImage.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
-//            rankingTableView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor, constant: 20),
+            tasksStack.topAnchor.constraint(equalTo: podiumImage.bottomAnchor),
+            tasksStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            tasksStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            tasksStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -32),
+//
+//            rankingTableView.topAnchor.constraint(equalTo: podiumImage.bottomAnchor, constant: 40),
 //            rankingTableView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 16),
-//            rankingTableView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16)
+//            rankingTableView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor, constant: -16),
         ])
     }
 }

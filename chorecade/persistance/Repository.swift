@@ -12,6 +12,7 @@ struct Repository {
     
     static var userRecordID: CKRecord.ID?
     static var userRecord: CKRecord?
+    static var currentUser: User?
     static var groupRecord: CKRecord?
     static var currentGroup: Group?
     static var currentUserNickname: String?
@@ -23,14 +24,14 @@ struct Repository {
             return
         }
         userRecordID = id
-        print("Current user ID: \(id)")
         
         guard let userRecord = await fetchRecordBy(id: id) else {
             print("Couldn't fetch iCloud user record")
             return
         }
         Repository.userRecord = userRecord
-        print("Current userRecord: \(userRecord)")
+        
+        Repository.currentUser = createUserModel(byRecord: userRecord)
         
         let groupCodes = userRecord["groupCode"] as? [String] ?? []
         
@@ -474,11 +475,11 @@ extension Repository {
             }
             
             // Atualiza o avatar no registro usando CKAsset
-            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.jpg") {
+            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.png") {
                 record["avatar"] = CKAsset(fileURL: avatarURL)
             }
 
-            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.jpg") {
+            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.png") {
                 record["avatarHead"] = CKAsset(fileURL: avatarHeadURL)
             }
             
@@ -511,9 +512,11 @@ extension Repository {
         let fileURL = tempDirectory.appendingPathComponent(
             UUID().uuidString + "_" + name
         )
-        guard let data = image.jpegData(compressionQuality: 0.8) else {
+        
+        guard let data = image.pngData() else {
             return nil
         }
+
         do {
             try data.write(to: fileURL)
             return fileURL

@@ -79,6 +79,7 @@ class TaskListTableViewCell: UITableViewCell {
         imageView.layer.borderWidth = 1
         imageView.layer.borderColor = UIColor.black.cgColor
         imageView.layer.cornerRadius = 13
+        imageView.backgroundColor = UIColor.namedColors.randomElement()?.value
         imageView.clipsToBounds = true
         return imageView
     }()

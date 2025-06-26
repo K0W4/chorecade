@@ -12,40 +12,48 @@ class RankingTableViewCell: UITableViewCell {
     static let reuseIdentifier = "ranking-cell"
     
     // MARK: - Components
-    lazy var userNameLabel = Components.getLabel(content: "", font: Fonts.taskDetails, alignment: .left)
+    lazy var userNameLabel = Components.getLabel(content: "morte", font: Fonts.taskDetails, alignment: .left)
     
-    lazy var userPointsLabel = Components.getLabel(content: "", font: Fonts.points, alignment: .center)
+    lazy var userPointsLabel = Components.getLabel(content: "15 points", font: Fonts.points, alignment: .center)
     
     lazy var userPointsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [userPointsLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .horizontal
         stackView.backgroundColor = .yellowPoints
-        stackView.alignment = .center
-        stackView.distribution = .equalSpacing
-        stackView.layer.cornerRadius = 12
+        stackView.layer.cornerRadius = 10
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.layoutMargins = UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
         return stackView
     }()
-        
+    
     lazy var userInfoStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [userNameLabel, userPointsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
+        stackView.alignment = .leading
         stackView.spacing = 8
         return stackView
     }()
-        
-    lazy var userPosition = Components.getLabel(content: "", font: Fonts.taskDetails, alignment: .left)
+    
+    lazy var userPosition = Components.getLabel(
+        content: "3",
+        font: Fonts.taskDetails,
+        alignment: .center
+    )
     
     lazy var userPositionStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [userPosition])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.alignment = .center
-        stackView.layer.cornerRadius = 12
         stackView.layer.borderWidth = 1
+        stackView.layer.cornerRadius = 15
         stackView.layer.borderColor = UIColor.primaryPurple300.cgColor
         stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.setContentHuggingPriority(.required, for: .horizontal)
+        stackView.setContentHuggingPriority(.required, for: .vertical)
+        stackView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        stackView.setContentCompressionResistancePriority(.required, for: .vertical)
         return stackView
     }()
     
@@ -53,18 +61,18 @@ class RankingTableViewCell: UITableViewCell {
         let stackView = UIStackView(arrangedSubviews: [userInfoStack, userPositionStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
-        stackView.spacing = 104
+        stackView.alignment = .center
+        stackView.distribution = .fill
         return stackView
     }()
     
     lazy var userIconImage: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "defaultImage")
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.borderWidth = 1
-        imageView.layer.borderColor = UIColor.black.cgColor
-        imageView.layer.cornerRadius = 13
+        imageView.image = UIImage(named: "fem1-head")
+        imageView.contentMode = .scaleAspectFit
+        imageView.backgroundColor = UIColor.namedColors.randomElement()?.value
+        imageView.layer.cornerRadius = 37.5
         imageView.clipsToBounds = true
         return imageView
     }()
@@ -77,13 +85,13 @@ class RankingTableViewCell: UITableViewCell {
         stackView.spacing = 24
         return stackView
     }()
-        
+    
     lazy var cellStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [userStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .vertical
         stackView.spacing = 16
-        stackView.backgroundColor = UIColor.primaryPurple100
+        stackView.backgroundColor = UIColor.background
         stackView.layer.borderWidth = 1
         stackView.layer.borderColor = UIColor.primaryPurple300.cgColor
         stackView.layer.cornerRadius = 16
@@ -102,10 +110,22 @@ class RankingTableViewCell: UITableViewCell {
         let bgColorView = UIView()
         bgColorView.backgroundColor = .clear
         self.selectedBackgroundView = bgColorView
+        userInfoStack.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        userPositionStack.setContentHuggingPriority(.required, for: .horizontal)
+        
+        userInfoStack.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        userPositionStack.setContentCompressionResistancePriority(.required, for: .horizontal)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func configure(name: String, points: Int, position: Int, avatar: UIImage) {
+        userNameLabel.text = name
+        userPointsLabel.text = "+\(points) points"
+        userIconImage.image = avatar
+        userPosition.text = "\(position)"
     }
 }
 
@@ -116,17 +136,20 @@ extension RankingTableViewCell: ViewCodeProtocol {
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            cellStack.topAnchor.constraint(equalTo: topAnchor),
-            cellStack.leadingAnchor.constraint(equalTo: leadingAnchor),
-            cellStack.trailingAnchor.constraint(equalTo: trailingAnchor),
+            cellStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
+            cellStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            cellStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             cellStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
             
-//            taskPointsStack.heightAnchor.constraint(equalToConstant: 26),
-//            
-//            taskImage.widthAnchor.constraint(equalToConstant: 45),
-//            taskImage.heightAnchor.constraint(equalToConstant: 45),
-//            
-//            iconUserImage.widthAnchor.constraint(equalToConstant: 28),
+            userIconImage.widthAnchor.constraint(equalToConstant: 75),
+            userIconImage.heightAnchor.constraint(equalToConstant: 75),
+            
+            
+            
+            userPositionStack.widthAnchor.constraint(equalToConstant: 30),
+            userPositionStack.heightAnchor.constraint(equalToConstant: 30),
+            
+            
         ])
     }
 }

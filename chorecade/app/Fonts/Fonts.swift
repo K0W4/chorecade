@@ -24,4 +24,5 @@ struct Fonts {
     static let beforeAndAfter = UIFont(name: "Jersey10-Regular", size: 24)
     static let taskDetails = UIFont(name: "Jersey10-Regular", size: 24)
     static let characterLabel = UIFont(name: "Jersey10-Regular", size: 40)
+    static let largeGroupLabel = UIFont(name: "Jersey10-Regular", size: 48)
 }

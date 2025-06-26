@@ -20,8 +20,40 @@ class TaskListView: UIView {
     
     lazy var avatarUIImageView: UIImageView = {
         let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.contentMode = .scaleAspectFit
         return imageView
+    }()
+    
+    // Points
+    
+    lazy var pointsLabel = Components.getLabel(content: "", font: Fonts.points, alignment: .center)
+    
+    lazy var pointsStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [pointsLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.backgroundColor = .yellowPoints
+        stackView.alignment = .center
+        stackView.distribution = .equalSpacing
+        stackView.layer.cornerRadius = 16
+        stackView.isLayoutMarginsRelativeArrangement = true
+        stackView.layoutMargins = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        return stackView
+    }()
+    
+    lazy var userNameLabel = Components.getLabel(
+        content: "",
+        font: Fonts.titleConcludedTask,
+        alignment: .center
+    )
+    
+    lazy var avatarStack: UIStackView = {
+        let stackView = UIStackView(arrangedSubviews: [pointsStack, avatarUIImageView, userNameLabel])
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .center
+        stackView.spacing = 8
+        return stackView
     }()
     
     lazy var addNewTaskButton = Components.getButton(content: "Add a new Task +", action: #selector(handleTap))
@@ -32,7 +64,7 @@ class TaskListView: UIView {
             guard let self = self else { return }
             self.currentSelectedGroup = selectedGroup
             Repository.currentGroup = selectedGroup
-          
+            
             Task {
                 var tasks: [Tasks] = []
                 tasks = selectedGroup.tasks
@@ -93,8 +125,17 @@ class TaskListView: UIView {
         backgroundColor = .background
         setup()
         
+        
         self.currentSelectedGroup = groupSelector.selectedGroup
         self.tasksByGroup = groupSelector.selectedGroup?.tasks ?? []
+        
+        if let user = Repository.currentUser{
+            avatarUIImageView.image = user.avatar
+            pointsLabel.text = "\(user.points) points"
+            userNameLabel.text = user.nickname
+        } else {
+            avatarUIImageView.image = UIImage(systemName: "person.circle.fill")
+        }
         
     }
     
@@ -112,7 +153,7 @@ class TaskListView: UIView {
             print("DEBUG: Nenhum grupo selecionado, não é possível recarregar tarefas.")
             return
         }
-
+        
         Task {
             do {
                 let updatedTasks = try await Repository.fetchTasksForGroup(selectedGroup.id)
@@ -128,7 +169,7 @@ class TaskListView: UIView {
         }
     }
     
-   
+    
     // funcao para definir o tamanho da tableView
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "contentSize" {
@@ -155,6 +196,7 @@ extension TaskListView: ViewCodeProtocol {
     func addSubviews() {
         addSubview(scrollView)
         scrollView.addSubview(contentView)
+        contentView.addSubview(avatarStack)
         contentView.addSubview(addNewTaskButton)
         contentView.addSubview(tasksStack)
     }
@@ -172,7 +214,14 @@ extension TaskListView: ViewCodeProtocol {
             contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             
-            addNewTaskButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 320),
+            
+            avatarStack.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor),
+            avatarStack.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            
+            avatarUIImageView.widthAnchor.constraint(equalToConstant: 200),
+            avatarUIImageView.heightAnchor.constraint(equalToConstant: 260),
+            
+            addNewTaskButton.topAnchor.constraint(equalTo: avatarStack.bottomAnchor, constant: 32),
             addNewTaskButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             addNewTaskButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
@@ -192,7 +241,7 @@ extension TaskListView: AddNewTaskModalDelegate {
         loadingOverlay = LoadingOverlay.show(on: self)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { self.reloadTasksForCurrentGroup()
         }
-       
+        
     }
     
 }
