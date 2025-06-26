@@ -35,8 +35,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //                print("Nickname não encontrado no userRecord.")
 //            }
             
-            let tabBarController = GroupDetailsViewController()
-            window.rootViewController = tabBarController
+//            let tabBarController = CreateGroupViewController()
+//            window.rootViewController = tabBarController
+            
+            let navController = UINavigationController(rootViewController: CreateGroupViewController())
+            window.rootViewController = navController
             
             self.window = window
             window.makeKeyAndVisible()

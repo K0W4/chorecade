@@ -91,8 +91,6 @@ class GroupsTableViewCell: UITableViewCell {
             imageView.contentMode = .scaleAspectFill
             imageView.layer.cornerRadius = 18
             imageView.clipsToBounds = true
-            imageView.layer.borderWidth = 2
-            imageView.layer.borderColor = UIColor.white.cgColor
             imageView.translatesAutoresizingMaskIntoConstraints = false
             imageView.widthAnchor.constraint(equalToConstant: 36).isActive = true
             imageView.heightAnchor.constraint(equalToConstant: 36).isActive = true

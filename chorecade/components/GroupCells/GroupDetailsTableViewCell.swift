@@ -39,6 +39,8 @@ class GroupDetailsTableViewCell: UITableViewCell {
         button.tintColor = .systemRed
         return button
     }()
+    
+    var deleteAction: (() -> Void)?
 
     lazy var userStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [userImage, userLabel, deleteButton])
@@ -75,8 +77,9 @@ class GroupDetailsTableViewCell: UITableViewCell {
     
     // MARK: Functions
     @objc func deleteUser() {
-        print("deleteUser")
+        deleteAction?()
     }
+    
 }
 
 extension GroupDetailsTableViewCell: ViewCodeProtocol {

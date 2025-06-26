@@ -10,6 +10,10 @@ import CloudKit
 
 class GroupDetailsViewController: UIViewController {
     
+    // MARK: Variables
+    var groupModel: Group?
+    var members: [(id: String, nickname: String, image: UIImage?)] = []
+    
     // MARK: Components
     private lazy var headerView: ModalHeader = {
         var header = ModalHeader()
@@ -17,6 +21,7 @@ class GroupDetailsViewController: UIViewController {
         header.title = "Group Details"
         header.addButtonAction = { [weak self] in
             self?.addButtonTapped()
+            header.cancelButton.setTitle("", for: .normal)
         }
         
         return header
@@ -32,7 +37,7 @@ class GroupDetailsViewController: UIViewController {
         return imageView
     }()
     
-    lazy var groupLabel = Components.getLabel(content: "teste", font: Fonts.nameTask)
+    lazy var groupLabel = Components.getLabel(content: "", font: Fonts.nameTask)
     
     lazy var editLabelButton: UIButton = {
         let button = UIButton()
@@ -57,7 +62,7 @@ class GroupDetailsViewController: UIViewController {
     
     lazy var codeLabel = Components.getLabel(content: "Code:", font: UIFont(name: "Jersey10-Regular", size: 29))
     
-    lazy var copyCodeLabel = Components.getLabel(content: " 6AE8T", font: UIFont(name: "SFProText-Regular", size: 20))
+    lazy var copyCodeLabel = Components.getLabel(content: "", font: UIFont(name: "SFProText-Regular", size: 20))
     
     lazy var codeCopiedLabel = Components.getLabel(content: " Copied!", font: UIFont(name: "SFProText-Regular", size: 20))
     
@@ -124,7 +129,7 @@ class GroupDetailsViewController: UIViewController {
         stackView.heightAnchor.constraint(equalToConstant: 47).isActive = true
         stackView.layer.borderColor = UIColor(named: "primaryPurple300")?.cgColor
         stackView.layer.borderWidth = 1
-        stackView.layer.cornerRadius = 8
+        stackView.layer.cornerRadius = 16
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.layoutMargins = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
         stackView.distribution = .equalSpacing
@@ -141,6 +146,17 @@ class GroupDetailsViewController: UIViewController {
         stackView.setCustomSpacing(20, after: groupImage)
         stackView.setCustomSpacing(10, after: labelStackView)
         return stackView
+    }()
+    
+    lazy var tableViewHeader: UILabel = {
+        let headerLabel = UILabel()
+        headerLabel.text = "Members"
+        headerLabel.font = UIFont(name: "Jersey10-Regular", size: 24)
+        headerLabel.textColor = .label
+        headerLabel.textAlignment = .left
+        headerLabel.backgroundColor = .clear
+        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+        return headerLabel
     }()
     
     lazy var usersTableView: UITableView = {
@@ -161,7 +177,18 @@ class GroupDetailsViewController: UIViewController {
         view.backgroundColor = .background
         setup()
         
+        usersTableView.keyboardDismissMode = .onDrag
         
+        if let group = groupModel {
+            groupLabel.text = group.name
+            copyCodeLabel.text = " " + group.groupCode
+
+            if let image = group.groupImage {
+                groupImage.image = image
+            }
+
+            loadMembers(for: group)
+        }
     }
     
     // MARK: Functions
@@ -190,6 +217,21 @@ class GroupDetailsViewController: UIViewController {
         print("Edit prize tapped")
 
     }
+    
+    func updateLayout() {
+        usersTableView.removeFromSuperview()
+        addSubviews()
+        setupConstraints()
+        usersTableView.reloadData()
+    }
+    
+    func loadMembers(for group: Group) {
+        self.members = group.users.map { user in
+            let image = user.avatarHead ?? UIImage(named: "defaultImage")
+            return (user.recordID.recordName, user.nickname, image)
+        }
+        self.usersTableView.reloadData()
+    }
 }
 
 extension GroupDetailsViewController: ViewCodeProtocol {
@@ -197,6 +239,7 @@ extension GroupDetailsViewController: ViewCodeProtocol {
         view.addSubview(headerView)
         view.addSubview(mainStackView)
         view.addSubview(prizeStackView)
+        view.addSubview(tableViewHeader)
         view.addSubview(usersTableView)
     }
     
@@ -227,33 +270,106 @@ extension GroupDetailsViewController: ViewCodeProtocol {
             
             // TableView
             
-            usersTableView.topAnchor.constraint(equalTo: prizeStackView.bottomAnchor, constant: 16),
+            tableViewHeader.topAnchor.constraint(equalTo: prizeStackView.bottomAnchor, constant: 40),
+            tableViewHeader.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+
+            usersTableView.topAnchor.constraint(equalTo: tableViewHeader.bottomAnchor, constant: 5),
             usersTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             usersTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            usersTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
-            
+            usersTableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
     }
 }
 
 extension GroupDetailsViewController: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return members.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "GroupDetailsTableViewCell", for: indexPath) as? GroupDetailsTableViewCell else {
             return UITableViewCell()
         }
+        let member = members[indexPath.row]
+        cell.userLabel.text = member.nickname
+        cell.userImage.image = member.image
+        cell.deleteAction = { [weak self] in
+            guard let self = self,
+                  let groupID = self.groupModel?.id,
+                  let groupName = self.groupModel?.name else { return }
+
+            let memberIDString = member.id
+            let memberNickname = member.nickname
+
+            let alert = UIAlertController(
+                title: nil,
+                message: "Remove \(memberNickname) from the \"\(groupName)\" group?",
+                preferredStyle: .actionSheet
+            )
+
+            alert.addAction(UIAlertAction(title: "Remove", style: .destructive) { _ in
+                CKContainer.default().publicCloudDatabase.fetch(withRecordID: groupID) { record, error in
+                    if let error = error {
+                        print("Erro ao buscar grupo: \(error.localizedDescription)")
+                        return
+                    }
+
+                    guard let record = record,
+                          var memberIDs = record["members"] as? [String] else {
+                        print("Campo 'members' não encontrado ou inválido.")
+                        return
+                    }
+
+                    memberIDs.removeAll { $0 == memberIDString }
+                    record["members"] = memberIDs
+
+                    CKContainer.default().publicCloudDatabase.save(record) { _, saveError in
+                        if let saveError = saveError {
+                            print("Erro ao salvar grupo: \(saveError.localizedDescription)")
+                            return
+                        }
+
+                        DispatchQueue.main.async {
+                            self.members.remove(at: indexPath.row)
+                            self.usersTableView.performBatchUpdates({
+                                self.usersTableView.deleteRows(at: [indexPath], with: .none)
+                            }, completion: { _ in
+                                self.usersTableView.reloadData()
+                            })
+                        }
+                    }
+                }
+            })
+
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            self.present(alert, animated: true)
+        }
         
         return cell
     }
+//
+//    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+//        if editingStyle == .delete {
+//            let memberRecord = members[indexPath.row]
+//            CKContainer.default().publicCloudDatabase.delete(withRecordID: memberRecord.recordID) { [weak self] recordID, error in
+//                guard let self = self else { return }
+//                if let error = error {
+//                    print("Erro ao remover membro: \(error.localizedDescription)")
+//                    return
+//                }
+//                DispatchQueue.main.async {
+//                    self.members.remove(at: indexPath.row)
+//                    tableView.deleteRows(at: [indexPath], with: .automatic)
+//                }
+//            }
+//        }
+//    }
 }
 
 
 extension GroupDetailsViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 100
+        return 1
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
@@ -261,29 +377,28 @@ extension GroupDetailsViewController: UITableViewDelegate {
         return view
     }
 
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerLabel = UILabel()
-        headerLabel.text = "Members"
-        headerLabel.font = UIFont(name: "Jersey10-Regular", size: 24)
-        headerLabel.textColor = .label
-        headerLabel.textAlignment = .left
-        headerLabel.backgroundColor = .clear
-
-        let containerView = UIView()
-        containerView.addSubview(headerLabel)
-        headerLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            headerLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
-            headerLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            headerLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
-            headerLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8)
-        ])
-
-        return containerView
-    }
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let headerLabel = UILabel()
+//        headerLabel.text = "Members"
+//        headerLabel.font = UIFont(name: "Jersey10-Regular", size: 24)
+//        headerLabel.textColor = .label
+//        headerLabel.textAlignment = .left
+//        headerLabel.backgroundColor = .clear
+//
+//        let containerView = UIView()
+//        containerView.addSubview(headerLabel)
+//        headerLabel.translatesAutoresizingMaskIntoConstraints = false
+//        NSLayoutConstraint.activate([
+//            headerLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+//            headerLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+//            headerLabel.topAnchor.constraint(equalTo: containerView.topAnchor),
+//            headerLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -8)
+//        ])
+//
+//        return containerView
+//    }
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 40
     }
 }
-
