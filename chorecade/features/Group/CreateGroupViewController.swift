@@ -19,6 +19,7 @@ class CreateGroupViewController: UIViewController {
             updateLayout()
         }
     }
+    
     var loadingOverlay: LoadingOverlay?
     
     // MARK: - Components
@@ -89,17 +90,15 @@ class CreateGroupViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.rowHeight = UITableView.automaticDimension
-        tableView.estimatedRowHeight = 108 
+        tableView.estimatedRowHeight = 108
         tableView.backgroundColor = .clear
         tableView.separatorStyle = .none
-//        tableView.isScrollEnabled = true
         tableView.alwaysBounceVertical = true
         tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
         
         return tableView
     }()
     
-
     // MARK: - Scene
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -112,6 +111,7 @@ class CreateGroupViewController: UIViewController {
             target: self,
             action: #selector(dismissKeyboard)
         )
+        tapDismissKeyboard.cancelsTouchesInView = false
         view.addGestureRecognizer(tapDismissKeyboard)
         
         CKContainer.default().accountStatus { status, error in
@@ -173,7 +173,6 @@ class CreateGroupViewController: UIViewController {
             await loadGroupsAndUsersForCurrentUser()
         }
     }
-    
     
     // MARK: - Button functions
     @objc func handleCreateButton() {
@@ -447,13 +446,27 @@ extension CreateGroupViewController: UITableViewDataSource {
 
 extension CreateGroupViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
-        return 100
+        return 1
     }
     
     func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let view = UIView()
         view.backgroundColor = .clear
         return view
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let selectedGroup = groupModels[indexPath.row]
+            print("Célula selecionada: \(selectedGroup.name)")
+            
+            let detailsVC = GroupDetailsViewController()
+            detailsVC.groupModel = selectedGroup
+            
+            if let nav = self.navigationController {
+                nav.pushViewController(detailsVC, animated: true)
+            } else {
+                self.present(detailsVC, animated: true)
+            }
     }
 }
 
@@ -463,7 +476,6 @@ extension CreateGroupViewController: UITextFieldDelegate {
         guard textField == codeTextField else { return true }
         guard let code = codeTextField.text, !code.isEmpty else { return true }
 
-        loadingOverlay = LoadingOverlay.show(on: self.view)
         Task {
             do {
                 let group = try await joinGroupAndSaveUser(withCode: code)
@@ -475,9 +487,11 @@ extension CreateGroupViewController: UITextFieldDelegate {
                         message: "You entered the group: \(group["name"] as? String ?? "")",
                         preferredStyle: .alert
                     )
-                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in
+                        self.didEnterGroup()
+                        self.codeTextField.text = ""
+                    })
                     self.present(alert, animated: true)
-                    self.didEnterGroup()
                 }
             } catch {
                 DispatchQueue.main.async {

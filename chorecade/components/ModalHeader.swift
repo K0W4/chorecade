@@ -9,7 +9,7 @@ import UIKit
 class ModalHeader: UIView {
     
     // MARK: Subviews
-    private lazy var cancelButton: UIButton = {
+    lazy var cancelButton: UIButton = {
         var button = UIButton()
         button.setTitle("Cancel", for: .normal)
         button.setTitleColor(.primaryPurple300, for: .normal)

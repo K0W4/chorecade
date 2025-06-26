@@ -92,9 +92,6 @@ extension CategoryCollectionViewListCell: ViewCodeProtocol {
             
             pointsStack.heightAnchor.constraint(equalToConstant: 26),
             
-            
-
-            
         ])
     }
 }

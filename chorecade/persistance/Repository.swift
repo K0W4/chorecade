@@ -258,11 +258,14 @@ extension Repository {
             taskList.append(task)
         }
         
+        let createdBy = record["createdBy"] as? String
+        
         return Group(
             id: id,
             name: name,
             startDate: Date(),
             duration: duration,
+            createdBy: createdBy,
             prize: prize,
             groupImage: groupImage,
             users: members,
