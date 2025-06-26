@@ -12,6 +12,7 @@ struct Repository {
     
     static var userRecordID: CKRecord.ID?
     static var userRecord: CKRecord?
+    static var currentUser: User?
     static var groupRecord: CKRecord?
     static var currentGroup: Group?
     static var currentUserNickname: String?
@@ -23,14 +24,14 @@ struct Repository {
             return
         }
         userRecordID = id
-        print("Current user ID: \(id)")
         
         guard let userRecord = await fetchRecordBy(id: id) else {
             print("Couldn't fetch iCloud user record")
             return
         }
         Repository.userRecord = userRecord
-        print("Current userRecord: \(userRecord)")
+        
+        Repository.currentUser = createUserModel(byRecord: userRecord)
         
         let groupCodes = userRecord["groupCode"] as? [String] ?? []
         
@@ -216,11 +217,26 @@ extension Repository {
         let id = record.recordID
         let name = record["name"] as? String ?? "Default name"
         let startDate = record["startDate"] as? Date ?? Date()
-        let duration = record["duration"] as? Int ?? 1
+        let duration = record["duration"] as? Int ?? 30
         let groupCode = record["groupCode"] as? String ?? "Default groupCode"
         let membersString = record["members"] as? [String] ?? []
         let prize = record["prize"] as? String ?? "Default prize"
+        let colorHex = record["color"] as? String ?? "#BDB2FF"
         var groupImage: UIImage? = nil
+        
+        print("-=-=-=-=-=-")
+        
+        var color: UIColor
+        if let colorr = UIColor(hex: colorHex) {
+            print("Group name: \(name)")
+            print("Color successfully transformed, hex: \(colorHex)")
+            print("Resolved color: \(colorr)")
+            color = colorr
+        } else {
+            print("Group name: \(name)")
+            print("Could not transform hex to UIColor, hex: \(colorHex)")
+            color = .selectionPurple
+        }
         
         if let groupImageAsset = record["groupImage"] as? CKAsset,
            let imageData = try? Data(contentsOf: groupImageAsset.fileURL!) {
@@ -254,7 +270,8 @@ extension Repository {
             groupImage: groupImage,
             users: members,
             tasks: taskList,
-            groupCode: groupCode
+            groupCode: groupCode,
+            color: color
         )
     }
     
@@ -477,11 +494,11 @@ extension Repository {
             }
             
             // Atualiza o avatar no registro usando CKAsset
-            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.jpg") {
+            if let avatarURL = saveImageToTempDirectory(image: avatar, name: "avatar.png") {
                 record["avatar"] = CKAsset(fileURL: avatarURL)
             }
 
-            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.jpg") {
+            if let avatarHeadURL = saveImageToTempDirectory(image: avatarHead, name: "avatarHead.png") {
                 record["avatarHead"] = CKAsset(fileURL: avatarHeadURL)
             }
             
@@ -514,9 +531,11 @@ extension Repository {
         let fileURL = tempDirectory.appendingPathComponent(
             UUID().uuidString + "_" + name
         )
-        guard let data = image.jpegData(compressionQuality: 0.8) else {
+        
+        guard let data = image.pngData() else {
             return nil
         }
+
         do {
             try data.write(to: fileURL)
             return fileURL
@@ -564,6 +583,50 @@ extension Repository {
                     continuation.resume(returning: records ?? [])
                 }
             }
+        }
+    }
+
+
+    // MARK: - Atualiza a imagem photoAfter de uma tarefa (async)
+    static func updateTaskPhotoAfter(taskRecordID: CKRecord.ID, photoAfter: UIImage) async -> Bool {
+        let publicDB = CKContainer.default().publicCloudDatabase
+
+        do {
+            let record = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<CKRecord, Error>) in
+                publicDB.fetch(withRecordID: taskRecordID) { record, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else if let record = record {
+                        continuation.resume(returning: record)
+                    } else {
+                        continuation.resume(throwing: NSError(domain: "TaskNotFound", code: 404, userInfo: nil))
+                    }
+                }
+            }
+
+            guard let afterURL = saveImageToTempDirectory(image: photoAfter, name: "after.jpg") else {
+                print("Erro ao salvar imagem temporária")
+                return false
+            }
+
+            record["photoAfter"] = CKAsset(fileURL: afterURL)
+
+            _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                publicDB.save(record) { _, error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
+                }
+            }
+
+            print("Imagem 'photoAfter' atualizada com sucesso.")
+            return true
+
+        } catch {
+            print("Erro ao atualizar photoAfter: \(error.localizedDescription)")
+            return false
         }
     }
 }

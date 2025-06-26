@@ -49,6 +49,7 @@ extension TaskListView: UITableViewDataSource {
             // To prevent race condition with reused cells
             if tableView.indexPath(for: cell) == indexPath {
                 cell.nameUserLabel.text = user.nickname
+                cell.iconUserImage.image = user.avatarHead
             }
         }
         

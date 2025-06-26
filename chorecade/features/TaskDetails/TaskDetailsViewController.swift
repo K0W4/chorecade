@@ -7,18 +7,28 @@
 
 import UIKit
 
-class TaskDetailsViewController: UIViewController {
-    
+class TaskDetailsViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+
     var task: Tasks?
-    
+
     // MARK: - Components
-    lazy var imagesScrollView: UIScrollView = {
-       let scrollView = UIScrollView()
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.delegate = self
-        return scrollView
+    lazy var imagesCollectionView: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.minimumLineSpacing = 0
+
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.isPagingEnabled = true
+        collectionView.showsHorizontalScrollIndicator = false
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(ImageCellCollectionViewCell.self, forCellWithReuseIdentifier: "ImageCell")
+        collectionView.register(AddImageCollectionViewCell.self, forCellWithReuseIdentifier: "AddImageCell")
+        collectionView.backgroundColor = .primaryPurple100
+        return collectionView
     }()
-    
+
     lazy var imagesPageControl: UIPageControl = {
         let pageControl = UIPageControl()
         pageControl.translatesAutoresizingMaskIntoConstraints = false
@@ -29,15 +39,23 @@ class TaskDetailsViewController: UIViewController {
         pageControl.layer.cornerRadius = 12
         return pageControl
     }()
-    
+
     lazy var taskTitleLabel = Components.getLabel(content: "Default Task", font: Fonts.titleConcludedTask, alignment: .center)
-    
-    lazy var authorImageView = UIImageView()
-    
+
+    lazy var authorImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "defaultImage")
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 43
+        imageView.backgroundColor = UIColor.namedColors.randomElement()?.value
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+
     lazy var authorNameLabel = Components.getLabel(content: "Julian", font: Fonts.titleConcludedTask)
-    
     lazy var dateLabel = Components.getLabel(content: "", font: Fonts.descriptionTask)
-    
+
     lazy var detailsStack: UIStackView = {
         let stackView = UIStackView(arrangedSubviews: [authorNameLabel, dateLabel])
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -47,37 +65,47 @@ class TaskDetailsViewController: UIViewController {
     }()
 
     lazy var authorStack: UIStackView = {
-       let stackView = UIStackView(arrangedSubviews: [authorImageView, detailsStack])
+        let stackView = UIStackView(arrangedSubviews: [authorImageView, detailsStack])
         stackView.translatesAutoresizingMaskIntoConstraints = false
         stackView.axis = .horizontal
-        stackView.spacing = 8
+        stackView.spacing = 16
         return stackView
     }()
-    
-    // MARK: - Functions
+
+    var images: [UIImage] = []
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        imagesScrollView.backgroundColor = .background
+        view.backgroundColor = .background
         imagesPageControl.addTarget(self, action: #selector(pageControlDidChange(_:)), for: .valueChanged)
         setup()
-        
+
         if let task = task {
             taskTitleLabel.text = task.category.title
             Task {
                 let user = await Repository.createUserModel(byRecordID: task.user)
                 authorNameLabel.text = user.nickname
+                authorImageView.image = user.avatarHead
             }
-            
-            configureScrollView(beforeImage: task.beforeImage, afterImage: task.afterImage)
+
+            if let before = task.beforeImage {
+                images.append(before)
+            }
+            if let after = task.afterImage {
+                images.append(after)
+            }
+
+            if images.count < 2 {
+                images.append(UIImage()) // Placeholder para célula de adicionar
+            }
+
+            imagesPageControl.numberOfPages = images.count
+            imagesCollectionView.reloadData()
         }
-        
-        
-       
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
         navigationController?.navigationBar.tintColor = .primaryPurple300
         tabBarController?.tabBar.isHidden = true
     }
@@ -86,71 +114,39 @@ class TaskDetailsViewController: UIViewController {
         super.viewWillDisappear(animated)
         tabBarController?.tabBar.isHidden = false
     }
-    
+
     @objc func pageControlDidChange(_ sender: UIPageControl) {
         let current = sender.currentPage
-        imagesScrollView.setContentOffset(CGPoint(x: view.frame.width * CGFloat(current), y: 0), animated: true)
-    }
-    
-    func configureScrollView(beforeImage: UIImage? = nil, afterImage: UIImage? = nil) {
-        imagesScrollView.contentSize = CGSize(width: view.frame.width * 2, height: view.frame.height)
-        imagesScrollView.isPagingEnabled = true
-        var images: [UIImage] = [UIImage(named: "defaultImage")!, UIImage(named: "defaultImage")!]
-        
-        if let beforeImage = beforeImage {
-            images[0] = beforeImage
-        }
-        
-        if let afterImage = afterImage {
-            images[1] = afterImage
-        }
-        
-        for i in 0..<2 {
-            let page = UIView(frame: CGRect(x: (view.frame.width * CGFloat(i)) + 16, y: 130, width: 360, height: 400))
-            let imageView = UIImageView(image: images[i])
-            imageView.contentMode = .scaleAspectFill
-            imageView.clipsToBounds = true
-            imageView.frame = CGRect(x: 0, y: 0, width: 360, height: 400)
-            page.addSubview(imageView)
-            imagesScrollView.addSubview(page)
-        }
+        imagesCollectionView.scrollToItem(at: IndexPath(item: current, section: 0), at: .centeredHorizontally, animated: true)
     }
 }
 
-// MARK: - Extensions
 extension TaskDetailsViewController: ViewCodeProtocol {
     func addSubviews() {
-        view.addSubview(imagesScrollView)
+        view.addSubview(imagesCollectionView)
         view.addSubview(imagesPageControl)
         view.addSubview(taskTitleLabel)
-        view.addSubview(detailsStack)
+        view.addSubview(authorStack)
     }
-    
+
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            imagesScrollView.topAnchor.constraint(equalTo: view.topAnchor),
-            imagesScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imagesScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            imagesScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            imagesPageControl.widthAnchor.constraint(equalToConstant: 48),
-            imagesPageControl.heightAnchor.constraint(equalToConstant: 24),
-            imagesPageControl.topAnchor.constraint(equalTo: view.topAnchor, constant: 496),
+            imagesCollectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
+            imagesCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            imagesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: -16),
+            imagesCollectionView.heightAnchor.constraint(equalToConstant: 400),
+
+            imagesPageControl.topAnchor.constraint(equalTo: imagesCollectionView.bottomAnchor, constant: 8),
             imagesPageControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
+
             taskTitleLabel.topAnchor.constraint(equalTo: imagesPageControl.bottomAnchor, constant: 20),
             taskTitleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            detailsStack.topAnchor.constraint(equalTo: taskTitleLabel.bottomAnchor, constant: 48),
-            detailsStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            detailsStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-        ])
-    }
-}
 
-extension TaskDetailsViewController: UIScrollViewDelegate {
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        let pageIndex = round(scrollView.contentOffset.x / view.frame.width)
-        imagesPageControl.currentPage = Int(pageIndex)
+            authorStack.topAnchor.constraint(equalTo: taskTitleLabel.bottomAnchor, constant: 48),
+            authorStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            authorStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            authorImageView.widthAnchor.constraint(equalToConstant: 86),
+            authorImageView.heightAnchor.constraint(equalToConstant: 86)
+        ])
     }
 }

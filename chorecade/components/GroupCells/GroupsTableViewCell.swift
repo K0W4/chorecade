@@ -141,6 +141,10 @@ class GroupsTableViewCell: UITableViewCell {
         super.layoutSubviews()
         contentView.frame = contentView.frame.inset(by: UIEdgeInsets(top: 4, left: 0, bottom: 4, right: 0))
     }
+    
+    func setBGColor(_ color: UIColor) {
+        contentView.backgroundColor = color
+    }
 }
 
 extension GroupsTableViewCell: ViewCodeProtocol {

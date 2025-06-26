@@ -12,3 +12,24 @@ extension UIViewController {
         view.endEditing(true)
     }
 }
+
+extension UIColor {
+    static var namedColors: [String: UIColor] {
+        let names = [
+            "selection-blue",
+            "selection-green",
+            "selection-yellow",
+            "selection-red",
+            "selection-orange",
+            "selection-purple"
+        ]
+        
+        var colors: [String: UIColor] = [:]
+        for name in names {
+            if let color = UIColor(named: name) {
+                colors[name] = color
+            }
+        }
+        return colors
+    }
+}

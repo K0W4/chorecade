@@ -24,6 +24,8 @@ class TaskListViewController: UIViewController {
         super.viewDidLoad()
         setup()
         
+        navigationController?.navigationBar.backgroundColor = .clear
+        
         taskListView.reloadTasksForCurrentGroup()
         
         taskListView.onTaskSelected = { [weak self] task in
