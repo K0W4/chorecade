@@ -99,7 +99,6 @@ extension TaskDetailsViewController: UICollectionViewDataSource, UICollectionVie
             
             if let recordID = currentTask.id {
                 
-                // NAO TA CHEGANDO AQUI CARALHO CU BUCETA
                 Task {
                     let sucesso = await Repository.updateTaskPhotoAfter(taskRecordID: recordID, photoAfter: selectedImage)
                     if sucesso {
