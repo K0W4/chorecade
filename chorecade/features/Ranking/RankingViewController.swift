@@ -10,12 +10,11 @@ import Foundation
 
 public class RankingViewController: UIViewController {
     
-    lazy var emptyStateRanking: RankingEmptyState = {
-        var empty = RankingEmptyState()
-        empty.translatesAutoresizingMaskIntoConstraints = false
-        empty.titleText = "Ranking"
-        empty.descriptionText = "Add your friends in \"Create Group\""
-        return empty
+    
+    lazy var rankingView: RankingView = {
+        var rankingView = RankingView()
+        rankingView.translatesAutoresizingMaskIntoConstraints = false
+        return rankingView
     }()
     
     public override func viewDidLoad() {
@@ -23,24 +22,38 @@ public class RankingViewController: UIViewController {
         view.backgroundColor = .background
         
         setup()
+        
+        navigationController?.isNavigationBarHidden = true
     }
+
+    public override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        // Reatribui o grupo atual e os usuários para atualizar os pontos
+        if let currentGroup = Repository.currentGroup {
+            let updatedUsers = currentGroup.users
+            DispatchQueue.main.async {
+                self.rankingView.currentSelectedGroup = currentGroup
+                self.rankingView.usersByGroup = updatedUsers
+            }
+        }
+    }
+
 }
 
 extension RankingViewController: ViewCodeProtocol {
-    func setup() {
-        addSubviews()
-        setupConstraints()
-    }
     
     func addSubviews() {
-        view.addSubview(emptyStateRanking)
+        view.addSubview(rankingView)
     }
     
     func setupConstraints() {
         NSLayoutConstraint.activate([
-            emptyStateRanking.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            emptyStateRanking.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            emptyStateRanking.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            rankingView.topAnchor.constraint(equalTo: view.topAnchor),
+            rankingView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            rankingView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            rankingView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            
         ])
     }
 }
