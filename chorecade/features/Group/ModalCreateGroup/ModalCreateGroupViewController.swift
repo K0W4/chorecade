@@ -21,6 +21,13 @@ class ModalCreateGroupViewController: UIViewController {
     var selectedColorIndex: Int? = nil
     weak var delegate: ModalCreateGroupDelegate?
     
+    let durationByText: [String: Int] = [
+        "Monthly": 30,
+        "Weekly": 7,
+        "Biweekly": 14
+    ]
+    var duration: Int = 30
+    
     // MARK: Components
     private lazy var headerView: ModalHeader = {
         var header = ModalHeader()
@@ -294,6 +301,12 @@ class ModalCreateGroupViewController: UIViewController {
             button.backgroundColor = .primaryPurple100
         }
 
+        print(sender.titleLabel?.text ?? "no title")
+        
+        if let duration = durationByText[sender.titleLabel?.text ?? "Monthly"] {
+            self.duration = duration
+        }
+        
         sender.backgroundColor = .primaryPurple300
     }
 
@@ -315,10 +328,13 @@ class ModalCreateGroupViewController: UIViewController {
     @objc func addButtonTapped() {
         let groupName = nameTextField.text ?? ""
         let prize = rewardTextField.text ?? ""
+        let color = colorOptions[selectedColorIndex ?? 5]
+        
         
         Task {
             do {
-                let groupCode = try await createGroup(groupName: groupName, prize: prize)
+                let groupCode = try await createGroup(groupName: groupName, prize: prize, color: color, duration: self.duration)
+                
                 print("Your group code is: \(groupCode)")
                 self.delegate?.didCreateGroup()
                 self.dismiss(animated: true)
@@ -385,10 +401,10 @@ extension ModalCreateGroupViewController: UIImagePickerControllerDelegate, UINav
 extension ModalCreateGroupViewController {
     
     // MARK: Create group
-    func createGroup(groupName: String, prize: String) async throws -> String {
+    func createGroup(groupName: String, prize: String, color: UIColor, duration: Int) async throws -> String {
         let publicDB = CKContainer.default().publicCloudDatabase
         let groupCode = String(UUID().uuidString.prefix(6)).uppercased()
-
+        
         let userRecordID: CKRecord.ID = try await withCheckedThrowingContinuation { continuation in
             CKContainer.default().fetchUserRecordID { userRecordID, error in
                 if let error = error {
@@ -422,12 +438,22 @@ extension ModalCreateGroupViewController {
             }
         }
         
+        var hexColor: String = ""
+        
+        if let hex = color.toHex {
+            hexColor = hex
+        }
+        else {
+            hexColor = "#FFFFFF"
+        }
+        
         groupRecord["name"] = groupName as NSString
         groupRecord["startDate"] = Date() as NSDate
-        groupRecord["duration"] = 1 as NSNumber
+        groupRecord["duration"] = duration as NSNumber
         groupRecord["groupCode"] = groupCode as NSString
         groupRecord["members"] = [userIDString] as NSArray
         groupRecord["prize"] = prize as NSString
+        groupRecord["color"] = hexColor as NSString
 //        groupRecord["tasks"] = [String]() as NSArray
         //tasks nao devem ser adicionadas no momento da criacao do grupo
 

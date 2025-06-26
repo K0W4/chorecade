@@ -216,11 +216,26 @@ extension Repository {
         let id = record.recordID
         let name = record["name"] as? String ?? "Default name"
         let startDate = record["startDate"] as? Date ?? Date()
-        let duration = record["duration"] as? Int ?? 1
+        let duration = record["duration"] as? Int ?? 30
         let groupCode = record["groupCode"] as? String ?? "Default groupCode"
         let membersString = record["members"] as? [String] ?? []
         let prize = record["prize"] as? String ?? "Default prize"
+        let colorHex = record["color"] as? String ?? "#BDB2FF"
         var groupImage: UIImage? = nil
+        
+        print("-=-=-=-=-=-")
+        
+        var color: UIColor
+        if let colorr = UIColor(hex: colorHex) {
+            print("Group name: \(name)")
+            print("Color successfully transformed, hex: \(colorHex)")
+            print("Resolved color: \(colorr)")
+            color = colorr
+        } else {
+            print("Group name: \(name)")
+            print("Could not transform hex to UIColor, hex: \(colorHex)")
+            color = .selectionPurple
+        }
         
         if let groupImageAsset = record["groupImage"] as? CKAsset,
            let imageData = try? Data(contentsOf: groupImageAsset.fileURL!) {
@@ -251,7 +266,8 @@ extension Repository {
             groupImage: groupImage,
             users: members,
             tasks: taskList,
-            groupCode: groupCode
+            groupCode: groupCode,
+            color: color
         )
     }
     

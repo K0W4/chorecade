@@ -17,6 +17,7 @@ class Group {
     var startDate: Date
     var duration: Int
     
+    var color: UIColor
     
     var endDate: Date {
         Calendar.current.date(byAdding: .day, value: duration, to: startDate) ?? Date()
@@ -28,7 +29,7 @@ class Group {
     
     var tasks: [Tasks] = []
     
-    init(id: CKRecord.ID, name: String, startDate: Date, duration: Int, prize: String, groupImage: UIImage? = nil, users: [User] = [], tasks: [Tasks] = [], groupCode: String) {
+    init(id: CKRecord.ID, name: String, startDate: Date, duration: Int, prize: String, groupImage: UIImage? = nil, users: [User] = [], tasks: [Tasks] = [], groupCode: String, color: UIColor) {
         self.id = id
         self.name = name
         self.startDate = startDate
@@ -38,5 +39,8 @@ class Group {
         self.users = users
         self.tasks = tasks
         self.groupCode = groupCode
+        self.color = color
+        
+        print("Group \(name) created for color \(color)")
     }
 }
