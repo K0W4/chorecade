@@ -132,8 +132,10 @@ class GroupDetailsViewController: UIViewController {
         stackView.layer.borderWidth = 1
         stackView.layer.cornerRadius = 16
         stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.layoutMargins = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
-        stackView.distribution = .equalSpacing
+        stackView.setCustomSpacing(8, after: trophyImage)
+        stackView.layoutMargins = UIEdgeInsets(top: 14.5, left: 18, bottom: 14.5, right: 18)
+        stackView.distribution = .fill
+        stackView.alignment = .leading
         stackView.spacing = 8
         return stackView
     }()
@@ -196,16 +198,16 @@ class GroupDetailsViewController: UIViewController {
             }
 
             // Verifica se o usuário atual é o criador do grupo
-            if let createdByID = group.createdBy {
+            if let createdBy = group.createdBy {
                 CKContainer.default().fetchUserRecordID { currentUserID, error in
                     guard let currentUserID = currentUserID, error == nil else {
                         print("Erro ao buscar o ID do usuário atual: \(error?.localizedDescription ?? "Desconhecido")")
                         return
                     }
 
-                    self.isCurrentUserCreator = (currentUserID.recordName == createdByID.recordName)
+                    self.isCurrentUserCreator = (currentUserID.recordName == createdBy)
                     print("Meu recordName: \(currentUserID.recordName)")
-                    print("Criador do grupo: \(createdByID.recordName)")
+                    print("Criador do grupo: \(createdBy)")
                     print("É criadora? \(self.isCurrentUserCreator)")
                     DispatchQueue.main.async {
                         self.editPrizeButton.isHidden = !self.isCurrentUserCreator

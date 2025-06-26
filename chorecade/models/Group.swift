@@ -17,7 +17,7 @@ class Group {
     var startDate: Date
     var duration: Int
     
-    var createdBy: CKRecord.ID?
+    var createdBy: String?
     
     var endDate: Date {
         Calendar.current.date(byAdding: .day, value: duration, to: startDate) ?? Date()
@@ -29,7 +29,7 @@ class Group {
     
     var tasks: [Tasks] = []
     
-    init(id: CKRecord.ID, name: String, startDate: Date, duration: Int, createdBy: CKRecord.ID?, prize: String, groupImage: UIImage? = nil, users: [User] = [], tasks: [Tasks] = [], groupCode: String) {
+    init(id: CKRecord.ID, name: String, startDate: Date, duration: Int, createdBy: String?, prize: String, groupImage: UIImage? = nil, users: [User] = [], tasks: [Tasks] = [], groupCode: String) {
         self.id = id
         self.name = name
         self.startDate = startDate

@@ -428,10 +428,8 @@ extension ModalCreateGroupViewController {
         groupRecord["groupCode"] = groupCode as NSString
         groupRecord["members"] = [userIDString] as NSArray
         groupRecord["prize"] = prize as NSString
-//        groupRecord["tasks"] = [String]() as NSArray
-        //tasks nao devem ser adicionadas no momento da criacao do grupo
-
-        // Step: Update user's groupCode
+        groupRecord["createdBy"] = String(describing: Repository.userRecordID?.recordName ?? String()) as NSString
+        
         CreateGroupViewController.addGroupCodeTo(user: userIDString, code: groupCode)
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
