@@ -98,7 +98,6 @@ class GroupDetailsViewController: UIViewController {
         label.font = UIFont(name: "Jersey10-Regular", size: 24)
         label.textAlignment = .center
         label.numberOfLines = 1
-        label.text = "Winner won't pay for the cinema"
         return label
     }()
     
@@ -134,7 +133,7 @@ class GroupDetailsViewController: UIViewController {
         stackView.isLayoutMarginsRelativeArrangement = true
         stackView.setCustomSpacing(8, after: trophyImage)
         stackView.layoutMargins = UIEdgeInsets(top: 14.5, left: 18, bottom: 14.5, right: 18)
-        stackView.distribution = .fill
+        stackView.distribution = .equalSpacing
         stackView.alignment = .leading
         stackView.spacing = 8
         return stackView
@@ -196,6 +195,9 @@ class GroupDetailsViewController: UIViewController {
             if let image = group.groupImage {
                 groupImage.image = image
             }
+
+            self.prizeLabel.text = group.prize
+            self.groupModel?.prize = group.prize
 
             // Verifica se o usuário atual é o criador do grupo
             if let createdBy = group.createdBy {
@@ -277,6 +279,7 @@ class GroupDetailsViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
             guard let newPrize = alert.textFields?.first?.text,
+                  !newPrize.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                   let groupID = self.groupModel?.id else { return }
 
             self.prizeLabel.text = newPrize
